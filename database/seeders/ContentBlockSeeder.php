@@ -15,25 +15,41 @@ class ContentBlockSeeder extends Seeder
                 'key' => 'hero_title',
                 'title' => 'Hero Title',
                 'content' => 'Kursus Ujian Perangkat Desa',
-                'type' => 'text'
+                'type' => 'text',
+                'description' => 'Judul utama pada halaman landing',
+                'is_active' => true
             ],
             [
                 'key' => 'hero_subtitle',
                 'title' => 'Hero Subtitle',
                 'content' => 'Persiapkan diri Anda untuk sukses dalam ujian perangkat desa dengan materi terlengkap dan terpercaya',
-                'type' => 'textarea'
+                'type' => 'textarea',
+                'description' => 'Subjudul pada halaman landing',
+                'is_active' => true
             ],
             [
                 'key' => 'about_title',
                 'title' => 'About Title',
                 'content' => 'Tentang Kursus',
-                'type' => 'text'
+                'type' => 'text',
+                'description' => 'Judul section tentang kursus',
+                'is_active' => true
             ],
             [
                 'key' => 'about_content',
                 'title' => 'About Content',
                 'content' => 'Kursus komprehensif yang dirancang khusus untuk membantu Anda lulus ujian perangkat desa dengan materi terkini dan metode pembelajaran yang efektif.',
-                'type' => 'textarea'
+                'type' => 'textarea',
+                'description' => 'Konten section tentang kursus',
+                'is_active' => true
+            ],
+            [
+                'key' => 'course_price',
+                'title' => 'Harga Kursus',
+                'content' => '299000',
+                'type' => 'number',
+                'description' => 'Harga kursus dalam rupiah',
+                'is_active' => true
             ],
             [
                 'key' => 'benefits',
@@ -60,7 +76,9 @@ class ContentBlockSeeder extends Seeder
                         'description' => 'Belajar kapan saja dan dimana saja melalui platform online'
                     ]
                 ]),
-                'type' => 'json'
+                'type' => 'json',
+                'description' => 'Daftar keunggulan kursus',
+                'is_active' => true
             ],
             [
                 'key' => 'testimonials',
@@ -75,9 +93,40 @@ class ContentBlockSeeder extends Seeder
                         'name' => 'Siti Nurhaliza',
                         'role' => 'Bendahara Desa',
                         'content' => 'Penjelasan materi mudah dipahami dan latihan soalnya sangat mirip dengan ujian sebenarnya.'
+                    ],
+                    [
+                        'name' => 'Budi Santoso',
+                        'role' => 'Kepala Desa',
+                        'content' => 'Kursus yang sangat rekomended untuk persiapan ujian perangkat desa. Instrukturnya profesional!'
                     ]
                 ]),
-                'type' => 'json'
+                'type' => 'json',
+                'description' => 'Testimonial dari alumni',
+                'is_active' => true
+            ],
+            [
+                'key' => 'contact_email',
+                'title' => 'Email Support',
+                'content' => 'support@kursusperangkatdesa.com',
+                'type' => 'text',
+                'description' => 'Email untuk customer support',
+                'is_active' => true
+            ],
+            [
+                'key' => 'contact_phone',
+                'title' => 'Telepon Support',
+                'content' => '+62 812-3456-7890',
+                'type' => 'text',
+                'description' => 'Nomor WhatsApp customer support',
+                'is_active' => true
+            ],
+            [
+                'key' => 'site_maintenance',
+                'title' => 'Mode Maintenance',
+                'content' => '0',
+                'type' => 'boolean',
+                'description' => 'Aktifkan untuk mode maintenance situs',
+                'is_active' => true
             ]
         ];
 

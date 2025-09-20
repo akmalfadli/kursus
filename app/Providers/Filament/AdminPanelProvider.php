@@ -1,9 +1,9 @@
 <?php
+// app/Providers/Filament/AdminPanelProvider.php
 
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -15,6 +15,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -27,8 +28,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Kursus Perangkat Desa')
+            ->brandLogo(asset('images/logo.png'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('images/favicon.ico'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
+                'success' => Color::Green,
+                'warning' => Color::Orange,
+                'danger' => Color::Red,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -39,6 +47,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\DashboardStatsWidget::class,
+                \App\Filament\Widgets\RecentTransactionsWidget::class,
+                \App\Filament\Widgets\RevenueChartWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -53,6 +64,16 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->navigationGroups([
+                'Penjualan',
+                'Manajemen User',
+                'Manajemen Konten',
+                'Laporan',
+                'Pengaturan',
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            ->maxContentWidth('7xl')
+            ->font('Inter');
     }
 }

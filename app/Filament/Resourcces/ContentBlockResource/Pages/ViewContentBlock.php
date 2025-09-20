@@ -1,22 +1,21 @@
 <?php
-// app/Filament/Resources/ContentBlockResource/Pages/ListContentBlocks.php
+// app/Filament/Resources/ContentBlockResource/Pages/ViewContentBlock.php
 
 namespace App\Filament\Resources\ContentBlockResource\Pages;
 
 use App\Filament\Resources\ContentBlockResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListContentBlocks extends ListRecords
+class ViewContentBlock extends ViewRecord
 {
     protected static string $resource = ContentBlockResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Tambah Konten')
-                ->icon('heroicon-o-plus'),
+            Actions\EditAction::make()
+                ->label('Edit'),
         ];
     }
 }

@@ -15,8 +15,20 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="website">
 
-    <!-- Tailwind CSS -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Tailwind CSS CDN (Quick Setup) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Additional styles -->
     @stack('styles')

@@ -1,15 +1,15 @@
 <?php
-// app/Filament/Resources/ContentBlockResource/Pages/EditContentBlock.php
+// app/Filament/Resources/TransactionResource/Pages/EditTransaction.php
 
-namespace App\Filament\Resources\ContentBlockResource\Pages;
+namespace App\Filament\Resources\TransactionResource\Pages;
 
-use App\Filament\Resources\ContentBlockResource;
+use App\Filament\Resources\TransactionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditContentBlock extends EditRecord
+class EditTransaction extends EditRecord
 {
-    protected static string $resource = ContentBlockResource::class;
+    protected static string $resource = TransactionResource::class;
 
     protected function getHeaderActions(): array
     {

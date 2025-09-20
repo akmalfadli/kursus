@@ -4,6 +4,7 @@
 namespace App\Filament\Resources\TransactionResource\Pages;
 
 use App\Filament\Resources\TransactionResource;
+use App\Filament\Resources\TransactionResource\Widgets;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -14,7 +15,23 @@ class ListTransactions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Transactions are created via payment flow, not manually
+            Actions\CreateAction::make()
+                ->label('Tambah Transaksi')
+                ->icon('heroicon-o-plus'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            Widgets\TransactionStatsWidget::class,
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            Widgets\TransactionChartWidget::class,
         ];
     }
 }

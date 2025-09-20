@@ -16,6 +16,12 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
+    'admin_email' => env('MAIL_ADMIN_EMAIL', 'teknologiperwira@gmail.com'),
+    'from' => [
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME')),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations

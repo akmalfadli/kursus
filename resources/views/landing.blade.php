@@ -200,28 +200,82 @@
                         </ul>
                     </div>
 
-                    <form action="{{ route('payment.initiate') }}" method="POST" class="space-y-4">
+                    <form action="{{ route('payment.initiate') }}" method="POST" class="space-y-4" id="payment-form">
                         @csrf
                         <div class="grid md:grid-cols-2 gap-4">
-                            <input type="text" name="name" placeholder="Nama Lengkap" required
-                                   class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                            <input type="email" name="email" placeholder="Email" required
-                                   class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                            <div>
+                                <input type="text" name="name" placeholder="Nama Lengkap" required
+                                       class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                       maxlength="255">
+                                <small class="text-blue-200 text-xs mt-1 block">Sesuai dengan identitas resmi</small>
+                            </div>
+                            <div>
+                                <input type="email" name="email" placeholder="Email Aktif" required
+                                       class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                       maxlength="255">
+                                <small class="text-blue-200 text-xs mt-1 block">Untuk akses materi kursus</small>
+                            </div>
                         </div>
-                        <input type="tel" name="phone" placeholder="Nomor WhatsApp (Opsional)"
-                               class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <div>
+                            <input type="tel" name="phone" placeholder="Nomor WhatsApp (08xxx atau +628xxx)"
+                                   class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                   pattern="^(\+62|62|0)[0-9]{8,13}$"
+                                   title="Format: 081234567890 atau +6281234567890">
+                            <small class="text-blue-200 text-xs mt-1 block">Opsional - untuk notifikasi pembayaran</small>
+                        </div>
 
-                        <button type="submit"
-                                class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                            BELAJAR SEKARANG - BAYAR AMAN
+                        <!-- Payment Methods Info -->
+                        <div class="bg-blue-800 bg-opacity-50 rounded-lg p-4 text-sm text-blue-100">
+                            <h4 class="font-semibold mb-2 text-blue-50">💳 Metode Pembayaran Tersedia:</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                <span>• Virtual Account</span>
+                                <span>• E-Wallet (OVO, DANA, ShopeePay)</span>
+                                <span>• QRIS</span>
+                                <span>• Kartu Kredit</span>
+                                <span>• Indomaret</span>
+                                <span>• LinkAja</span>
+                                <span>• Alfamart</span>
+                                <span>• Dan lainnya</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="pay-button"
+                                class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span id="button-text">BELAJAR SEKARANG - BAYAR AMAN</span>
+                            <span id="button-loading" class="hidden">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Membuat Pembayaran...
+                            </span>
                         </button>
                     </form>
 
                     <div class="mt-6 text-sm text-blue-100">
-                        <div class="flex items-center justify-center space-x-4">
-                            <span>🔒 Pembayaran 100% Aman</span>
-                            <span>💳 Semua Metode Pembayaran</span>
-                            <span>📱 Akses Instant</span>
+                        <div class="flex items-center justify-center space-x-6 flex-wrap">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Pembayaran 100% Aman
+                            </span>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                Semua Metode Pembayaran
+                            </span>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                                </svg>
+                                Akses Instant
+                            </span>
+                        </div>
+                        <div class="text-center mt-3 text-xs">
+                            Powered by <strong>Duitku</strong> - Payment Gateway Indonesia Terpercaya
                         </div>
                     </div>
                 </div>
@@ -279,22 +333,198 @@
 </div>
 
 @if($errors->any())
-<div class="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50">
-    {{ $errors->first() }}
+<div class="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50" id="error-notification">
+    <div class="flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+        {{ $errors->first() }}
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+@endif
+
+@if(session('success'))
+<div class="fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50" id="success-notification">
+    <div class="flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        {{ session('success') }}
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
 </div>
 @endif
 
 <script>
+// Smooth scrolling function
 function scrollToSection(sectionId) {
     document.getElementById(sectionId).scrollIntoView({
         behavior: 'smooth'
     });
 }
 
-// Auto hide error messages
-setTimeout(function() {
-    const errors = document.querySelectorAll('.fixed.bg-red-500');
-    errors.forEach(error => error.remove());
-}, 5000);
+// Form handling and validation
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentForm = document.getElementById('payment-form');
+    const payButton = document.getElementById('pay-button');
+    const buttonText = document.getElementById('button-text');
+    const buttonLoading = document.getElementById('button-loading');
+
+    // Phone number formatting
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+
+            // Format Indonesian phone number
+            if (value.startsWith('62')) {
+                value = '+' + value;
+            } else if (value.startsWith('0')) {
+                value = value; // Keep as is for display
+            } else if (value.length > 0) {
+                value = '0' + value;
+            }
+
+            e.target.value = value;
+        });
+    }
+
+    // Form submission handling
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function(e) {
+            // Show loading state
+            payButton.disabled = true;
+            buttonText.classList.add('hidden');
+            buttonLoading.classList.remove('hidden');
+
+            // Basic client-side validation
+            const name = document.querySelector('input[name="name"]').value.trim();
+            const email = document.querySelector('input[name="email"]').value.trim();
+
+            if (name.length < 2) {
+                e.preventDefault();
+                showError('Nama harus minimal 2 karakter');
+                resetButton();
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                e.preventDefault();
+                showError('Format email tidak valid');
+                resetButton();
+                return;
+            }
+
+            // Store form data in localStorage for thank you page
+            localStorage.setItem('payment_form_data', JSON.stringify({
+                name: name,
+                email: email,
+                timestamp: Date.now()
+            }));
+        });
+    }
+
+    function resetButton() {
+        payButton.disabled = false;
+        buttonText.classList.remove('hidden');
+        buttonLoading.classList.add('hidden');
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function showError(message) {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification-error');
+        existingNotifications.forEach(notif => notif.remove());
+
+        // Create new error notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 notification-error';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                ${message}
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+
+    // Auto hide notifications after 5 seconds
+    setTimeout(function() {
+        const notifications = document.querySelectorAll('#error-notification, #success-notification');
+        notifications.forEach(notification => {
+            if (notification) {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }
+        });
+    }, 5000);
+
+    // Payment status checker (for returning users)
+    const urlParams = new URLSearchParams(window.location.search);
+    const invoiceParam = urlParams.get('invoice');
+    if (invoiceParam) {
+        checkPaymentStatus(invoiceParam);
+    }
+});
+
+// Payment status checker function
+function checkPaymentStatus(invoiceId) {
+    fetch('{{ route("payment.status") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            invoice_id: invoiceId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const transaction = data.data;
+            if (transaction.payment_status === 'paid') {
+                window.location.href = '{{ route("thank-you") }}?invoice=' + invoiceId;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking payment status:', error);
+    });
+}
+
+// Format currency for display
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
 </script>
 @endsection
