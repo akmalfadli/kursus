@@ -1,9 +1,9 @@
 <?php
-// app/Filament/Widgets/RecentTransactionsWidget.php
 
 namespace App\Filament\Widgets;
 
 use App\Models\Transaction;
+use App\Filament\Resources\TransactionResource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -62,7 +62,7 @@ class RecentTransactionsWidget extends BaseWidget
                 Tables\Actions\Action::make('view')
                     ->label('Lihat')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (Transaction $record): string => route('filament.admin.resources.transactions.view', $record)),
+                    ->url(fn (Transaction $record): string => TransactionResource::getUrl('view', ['record' => $record])),
             ])
             ->poll('30s');
     }

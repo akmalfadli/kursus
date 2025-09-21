@@ -1,5 +1,4 @@
 <?php
-// app/Filament/Resources/ContentBlockResource.php
 
 namespace App\Filament\Resources;
 
@@ -136,7 +135,7 @@ class ContentBlockResource extends Resource
                     ->label('Judul')
                     ->searchable()
                     ->sortable()
-                    ->description(fn (ContentBlock $record): ?string => $record->description),
+                    ->description(fn (?ContentBlock $record): ?string => $record?->description),
 
                 BadgeColumn::make('type')
                     ->label('Tipe')
@@ -164,18 +163,19 @@ class ContentBlockResource extends Resource
                     ->label('Preview')
                     ->circular()
                     ->size(40)
-                    ->visible(fn (ContentBlock $record) => $record->type === 'image'),
+                    ->visible(fn (?ContentBlock $record) => $record && $record->type === 'image'),
 
                 TextColumn::make('content')
                     ->label('Konten')
                     ->limit(50)
-                    ->tooltip(function (ContentBlock $record): string {
+                    ->tooltip(function (?ContentBlock $record): string {
+                        if (!$record) return '';
                         if ($record->type === 'json') {
                             return 'Data JSON';
                         }
-                        return $record->content;
+                        return $record->content ?? '';
                     })
-                    ->visible(fn (ContentBlock $record) => $record->type !== 'image'),
+                    ->visible(fn (?ContentBlock $record) => !$record || $record->type !== 'image'),
 
                 BadgeColumn::make('is_active')
                     ->label('Status')

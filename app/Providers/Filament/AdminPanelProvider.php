@@ -28,8 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Kursus Perangkat Desa')
-            ->brandLogo(asset('images/logo.png'))
+            ->brandName('Kursus Perwira')
+            ->brandLogo(asset('images/logo-text.png'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('images/favicon.ico'))
             ->colors([
@@ -45,8 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\DashboardStatsWidget::class,
                 \App\Filament\Widgets\RecentTransactionsWidget::class,
                 \App\Filament\Widgets\RevenueChartWidget::class,
