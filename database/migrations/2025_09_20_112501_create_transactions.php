@@ -23,7 +23,7 @@ return new class extends Migration
             $table->json('duitku_response')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
-
+            
             $table->index(['payment_status', 'created_at']);
         });
     }
