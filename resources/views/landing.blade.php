@@ -200,54 +200,39 @@
                         </ul>
                     </div>
 
-                    <form action="{{ route('payment.initiate') }}" method="POST" class="space-y-4" id="payment-form">
+                    <form id="customer-form" class="space-y-4">
                         @csrf
                         <div class="grid md:grid-cols-2 gap-4">
                             <div>
                                 <input type="text" name="name" placeholder="Nama Lengkap" required
-                                       class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                       maxlength="255">
+                                    class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    maxlength="255">
                                 <small class="text-blue-200 text-xs mt-1 block">Sesuai dengan identitas resmi</small>
                             </div>
                             <div>
                                 <input type="email" name="email" placeholder="Email Aktif" required
-                                       class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                       maxlength="255">
+                                    class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                    maxlength="255">
                                 <small class="text-blue-200 text-xs mt-1 block">Untuk akses materi kursus</small>
                             </div>
                         </div>
                         <div>
                             <input type="tel" name="phone" placeholder="Nomor WhatsApp (08xxx atau +628xxx)"
-                                   class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                   pattern="^(\+62|62|0)[0-9]{8,13}$"
-                                   title="Format: 081234567890 atau +6281234567890">
+                                class="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                pattern="^(\+62|62|0)[0-9]{8,13}$"
+                                title="Format: 081234567890 atau +6281234567890">
                             <small class="text-blue-200 text-xs mt-1 block">Opsional - untuk notifikasi pembayaran</small>
                         </div>
 
-                        <!-- Payment Methods Info -->
-                        <div class="bg-blue-800 bg-opacity-50 rounded-lg p-4 text-sm text-blue-100">
-                            <h4 class="font-semibold mb-2 text-blue-50">💳 Metode Pembayaran Tersedia:</h4>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                                <span>• Virtual Account</span>
-                                <span>• E-Wallet (OVO, DANA, ShopeePay)</span>
-                                <span>• QRIS</span>
-                                <span>• Kartu Kredit</span>
-                                <span>• Indomaret</span>
-                                <span>• LinkAja</span>
-                                <span>• Alfamart</span>
-                                <span>• Dan lainnya</span>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="pay-button"
+                        <button type="submit" id="choose-payment-btn"
                                 class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span id="button-text">BELAJAR SEKARANG - BAYAR AMAN</span>
+                            <span id="button-text">PILIH METODE PEMBAYARAN</span>
                             <span id="button-loading" class="hidden">
                                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Membuat Pembayaran...
+                                Memuat Metode Pembayaran...
                             </span>
                         </button>
                     </form>
@@ -282,6 +267,66 @@
             </div>
         </div>
     </section>
+
+    <!-- Payment Method Selection Modal -->
+    <div id="payment-method-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-gray-900">Pilih Metode Pembayaran</h3>
+                    <button id="close-modal" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+                <div class="mt-2">
+                    <p class="text-gray-600">Total: <span id="modal-amount" class="font-bold text-blue-600"></span></p>
+                    <p class="text-sm text-gray-500">Untuk: <span id="modal-customer"></span></p>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div id="payment-methods-loading" class="text-center py-8">
+                    <svg class="animate-spin mx-auto h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-gray-600">Memuat metode pembayaran...</p>
+                </div>
+
+                <div id="payment-methods-container" class="hidden">
+                    <div class="grid gap-3" id="payment-methods-list">
+                        <!-- Payment methods will be loaded here -->
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <button id="proceed-payment-btn"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <span id="proceed-text">Pilih Metode Pembayaran</span>
+                            <span id="proceed-loading" class="hidden">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Memproses Pembayaran...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="payment-methods-error" class="hidden text-center py-8">
+                    <div class="text-red-500 mb-4">
+                        <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Gagal Memuat Metode Pembayaran</h4>
+                    <p class="text-gray-600 mb-4">Silakan coba lagi atau hubungi customer service.</p>
+                    <button id="retry-payment-methods" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                        Coba Lagi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- FAQ Section -->
     <section class="py-16 lg:py-24 bg-gray-50">
@@ -365,78 +410,294 @@
 @endif
 
 <script>
-// Smooth scrolling function
-function scrollToSection(sectionId) {
-    document.getElementById(sectionId).scrollIntoView({
-        behavior: 'smooth'
-    });
-}
-
-// Form handling and validation
+// Enhanced payment flow with payment method selection
 document.addEventListener('DOMContentLoaded', function() {
-    const paymentForm = document.getElementById('payment-form');
-    const payButton = document.getElementById('pay-button');
+    const customerForm = document.getElementById('customer-form');
+    const choosePaymentBtn = document.getElementById('choose-payment-btn');
     const buttonText = document.getElementById('button-text');
     const buttonLoading = document.getElementById('button-loading');
+
+    // Modal elements
+    const paymentModal = document.getElementById('payment-method-modal');
+    const closeModal = document.getElementById('close-modal');
+    const paymentMethodsLoading = document.getElementById('payment-methods-loading');
+    const paymentMethodsContainer = document.getElementById('payment-methods-container');
+    const paymentMethodsError = document.getElementById('payment-methods-error');
+    const paymentMethodsList = document.getElementById('payment-methods-list');
+    const proceedPaymentBtn = document.getElementById('proceed-payment-btn');
+    const retryBtn = document.getElementById('retry-payment-methods');
+
+    let currentUserData = null;
+    let currentPaymentMethods = null;
+    let selectedPaymentMethod = null;
 
     // Phone number formatting
     const phoneInput = document.querySelector('input[name="phone"]');
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-
-            // Format Indonesian phone number
+            let value = e.target.value.replace(/\D/g, '');
             if (value.startsWith('62')) {
                 value = '+' + value;
             } else if (value.startsWith('0')) {
-                value = value; // Keep as is for display
+                value = value;
             } else if (value.length > 0) {
                 value = '0' + value;
             }
-
             e.target.value = value;
         });
     }
 
-    // Form submission handling
-    if (paymentForm) {
-        paymentForm.addEventListener('submit', function(e) {
-            // Show loading state
-            payButton.disabled = true;
-            buttonText.classList.add('hidden');
-            buttonLoading.classList.remove('hidden');
+    // Step 1: Get payment methods
+    customerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            // Basic client-side validation
-            const name = document.querySelector('input[name="name"]').value.trim();
-            const email = document.querySelector('input[name="email"]').value.trim();
+        const formData = new FormData(customerForm);
+        const customerData = {
+            name: formData.get('name').trim(),
+            email: formData.get('email').trim(),
+            phone: formData.get('phone').trim()
+        };
 
-            if (name.length < 2) {
-                e.preventDefault();
-                showError('Nama harus minimal 2 karakter');
-                resetButton();
-                return;
+        // Validate customer data
+        if (customerData.name.length < 2) {
+            showError('Nama harus minimal 2 karakter');
+            return;
+        }
+
+        if (!isValidEmail(customerData.email)) {
+            showError('Format email tidak valid');
+            return;
+        }
+
+        // Store customer data and fetch payment methods
+        currentUserData = customerData;
+        fetchPaymentMethods(customerData);
+    });
+
+    function fetchPaymentMethods(customerData) {
+        setButtonLoading(true);
+
+        fetch('{{ route("payment.methods") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(customerData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            setButtonLoading(false);
+
+            if (data.status === 'success') {
+                currentPaymentMethods = data.data.payment_methods;
+                showPaymentMethodModal(data.data);
+            } else {
+                showError(data.message || 'Gagal mengambil metode pembayaran');
             }
-
-            if (!isValidEmail(email)) {
-                e.preventDefault();
-                showError('Format email tidak valid');
-                resetButton();
-                return;
-            }
-
-            // Store form data in localStorage for thank you page
-            localStorage.setItem('payment_form_data', JSON.stringify({
-                name: name,
-                email: email,
-                timestamp: Date.now()
-            }));
+        })
+        .catch(error => {
+            setButtonLoading(false);
+            console.error('Error:', error);
+            showError('Terjadi kesalahan. Silakan coba lagi.');
         });
     }
 
-    function resetButton() {
-        payButton.disabled = false;
-        buttonText.classList.remove('hidden');
-        buttonLoading.classList.add('hidden');
+    function showPaymentMethodModal(data) {
+        // Update modal info
+        document.getElementById('modal-amount').textContent = data.formatted_amount;
+        document.getElementById('modal-customer').textContent = `${data.user_data.name} (${data.user_data.email})`;
+
+        // Show modal
+        paymentModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Load payment methods
+        loadPaymentMethods(data.payment_methods);
+    }
+
+    function loadPaymentMethods(paymentMethods) {
+        paymentMethodsLoading.classList.remove('hidden');
+        paymentMethodsContainer.classList.add('hidden');
+        paymentMethodsError.classList.add('hidden');
+
+        if (!paymentMethods || paymentMethods.length === 0) {
+            showPaymentMethodsError();
+            return;
+        }
+
+        // Render payment methods
+        paymentMethodsList.innerHTML = '';
+
+        paymentMethods.forEach(method => {
+            const methodElement = createPaymentMethodElement(method);
+            paymentMethodsList.appendChild(methodElement);
+        });
+
+        // Show payment methods
+        setTimeout(() => {
+            paymentMethodsLoading.classList.add('hidden');
+            paymentMethodsContainer.classList.remove('hidden');
+        }, 500);
+    }
+
+    function createPaymentMethodElement(method) {
+        const div = document.createElement('div');
+        div.className = 'payment-method-option border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-200';
+        div.dataset.paymentMethod = method.paymentMethod;
+
+        div.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-8 bg-gray-100 rounded border flex items-center justify-center overflow-hidden">
+                        <img src="${method.paymentImage}" alt="${method.paymentName}" class="max-w-full max-h-full object-contain"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\"text-xs text-gray-500\\">${method.paymentMethod}</span>'">
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">${method.paymentName}</h4>
+                        <p class="text-sm text-gray-500">Kode: ${method.paymentMethod}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    ${method.totalFee === '0' || method.totalFee === 0 ?
+                        '<span class="text-green-600 text-sm font-medium">Gratis</span>' :
+                        `<span class="text-gray-600 text-sm">+Rp ${parseInt(method.totalFee).toLocaleString('id-ID')}</span>`
+                    }
+                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full ml-3 payment-radio"></div>
+                </div>
+            </div>
+        `;
+
+        div.addEventListener('click', function() {
+            selectPaymentMethod(method, div);
+        });
+
+        return div;
+    }
+
+    function selectPaymentMethod(method, element) {
+        // Remove previous selection
+        document.querySelectorAll('.payment-method-option').forEach(el => {
+            el.classList.remove('border-blue-500', 'bg-blue-50');
+            const radio = el.querySelector('.payment-radio');
+            radio.classList.remove('border-blue-500', 'bg-blue-500');
+            radio.innerHTML = '';
+        });
+
+        // Add selection to clicked element
+        element.classList.add('border-blue-500', 'bg-blue-50');
+        const radio = element.querySelector('.payment-radio');
+        radio.classList.add('border-blue-500', 'bg-blue-500');
+        radio.innerHTML = '<div class="w-2 h-2 bg-white rounded-full mx-auto"></div>';
+
+        selectedPaymentMethod = method;
+
+        // Enable proceed button
+        proceedPaymentBtn.disabled = false;
+        document.getElementById('proceed-text').textContent = `Bayar dengan ${method.paymentName}`;
+    }
+
+    function showPaymentMethodsError() {
+        paymentMethodsLoading.classList.add('hidden');
+        paymentMethodsContainer.classList.add('hidden');
+        paymentMethodsError.classList.remove('hidden');
+    }
+
+    // Step 2: Create transaction
+    proceedPaymentBtn.addEventListener('click', function() {
+        if (!selectedPaymentMethod) return;
+
+        createTransaction();
+    });
+
+    function createTransaction() {
+        const proceedText = document.getElementById('proceed-text');
+        const proceedLoading = document.getElementById('proceed-loading');
+
+        proceedPaymentBtn.disabled = true;
+        proceedText.classList.add('hidden');
+        proceedLoading.classList.remove('hidden');
+
+        const transactionData = {
+            ...currentUserData,
+            payment_method: selectedPaymentMethod.paymentMethod
+        };
+
+        fetch('{{ route("payment.initiate") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(transactionData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Store transaction data for thank you page
+                localStorage.setItem('payment_form_data', JSON.stringify({
+                    name: currentUserData.name,
+                    email: currentUserData.email,
+                    invoice_id: data.data.invoice_id,
+                    timestamp: Date.now()
+                }));
+
+                // Redirect to payment URL
+                window.location.href = data.data.payment_url;
+            } else {
+                showError(data.message || 'Gagal membuat pembayaran');
+                resetProceedButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Terjadi kesalahan. Silakan coba lagi.');
+            resetProceedButton();
+        });
+    }
+
+    function resetProceedButton() {
+        const proceedText = document.getElementById('proceed-text');
+        const proceedLoading = document.getElementById('proceed-loading');
+
+        proceedPaymentBtn.disabled = false;
+        proceedText.classList.remove('hidden');
+        proceedLoading.classList.add('hidden');
+    }
+
+    // Modal controls
+    closeModal.addEventListener('click', hidePaymentMethodModal);
+    retryBtn.addEventListener('click', function() {
+        if (currentUserData) {
+            fetchPaymentMethods(currentUserData);
+        }
+    });
+
+    // Close modal on outside click
+    paymentModal.addEventListener('click', function(e) {
+        if (e.target === paymentModal) {
+            hidePaymentMethodModal();
+        }
+    });
+
+    function hidePaymentMethodModal() {
+        paymentModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        selectedPaymentMethod = null;
+        proceedPaymentBtn.disabled = true;
+        document.getElementById('proceed-text').textContent = 'Pilih Metode Pembayaran';
+    }
+
+    // Helper functions
+    function setButtonLoading(loading) {
+        choosePaymentBtn.disabled = loading;
+        if (loading) {
+            buttonText.classList.add('hidden');
+            buttonLoading.classList.remove('hidden');
+        } else {
+            buttonText.classList.remove('hidden');
+            buttonLoading.classList.add('hidden');
+        }
     }
 
     function isValidEmail(email) {
@@ -449,16 +710,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const existingNotifications = document.querySelectorAll('.notification-error');
         existingNotifications.forEach(notif => notif.remove());
 
-        // Create new error notification
         const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 notification-error';
+        notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 notification-error max-w-sm';
         notification.innerHTML = `
             <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                 </svg>
-                ${message}
-                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <span class="flex-1">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 flex-shrink-0">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                     </svg>
@@ -467,64 +727,10 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.body.appendChild(notification);
 
-        // Auto hide after 5 seconds
         setTimeout(() => {
             notification.remove();
         }, 5000);
     }
-
-    // Auto hide notifications after 5 seconds
-    setTimeout(function() {
-        const notifications = document.querySelectorAll('#error-notification, #success-notification');
-        notifications.forEach(notification => {
-            if (notification) {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            }
-        });
-    }, 5000);
-
-    // Payment status checker (for returning users)
-    const urlParams = new URLSearchParams(window.location.search);
-    const invoiceParam = urlParams.get('invoice');
-    if (invoiceParam) {
-        checkPaymentStatus(invoiceParam);
-    }
 });
-
-// Payment status checker function
-function checkPaymentStatus(invoiceId) {
-    fetch('{{ route("payment.status") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            invoice_id: invoiceId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            const transaction = data.data;
-            if (transaction.payment_status === 'paid') {
-                window.location.href = '{{ route("thank-you") }}?invoice=' + invoiceId;
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error checking payment status:', error);
-    });
-}
-
-// Format currency for display
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(amount);
-}
 </script>
 @endsection
