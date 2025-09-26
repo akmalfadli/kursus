@@ -75,10 +75,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white/70 backdrop-blur-sm p-8 border border-blue-100 rounded-lg shadow-lg">
-                    <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-teal-100 mb-6 flex items-center justify-center rounded-lg">
-                        <span class="text-teal-600 text-sm font-medium">MATERI KURSUS</span>
+                <div class="bg-white/70 backdrop-blur-sm p-4 border border-blue-100 rounded-lg shadow-lg">
+                    <!-- Replace gradient box with image -->
+                    <div class="w-full h-64 mb-6 rounded-lg overflow-hidden">
+                        <img src="/images/mentor.png"
+                            alt="Materi Kursus"
+                            class="w-full h-full object-cover">
                     </div>
+
                     <h3 class="text-xl font-light text-slate-800 mb-2">Pembelajaran Terstruktur</h3>
                     <p class="text-slate-600 text-sm">Dengan panduan dari instruktur berpengalaman</p>
                 </div>
