@@ -341,18 +341,28 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-4 border-t border-blue-100 bg-gradient-to-r from-white to-blue-50/20">
+    <footer class="py-12 px-4 border-t border-blue-00 bg-gradient-to-r from-white to-blue-50/20">
         <div class="max-w-4xl mx-auto text-center">
             <h3 class="text-xl font-light text-slate-800 mb-4">{{ $content['course_name'] }}</h3>
             <p class="text-sm text-slate-600 mb-6">Persiapkan masa depan Anda bersama kami</p>
+
             <div class="flex justify-center gap-8 text-xs text-slate-500 mb-6">
                 <a href="#" class="hover:text-teal-600 transition-colors">Privacy Policy</a>
                 <a href="#" class="hover:text-teal-600 transition-colors">Terms of Service</a>
                 <a href="#" class="hover:text-teal-600 transition-colors">Contact</a>
             </div>
+
+            <!-- Kontak Support -->
+            <div class="text-sm text-slate-600 mb-6 space-y-1">
+                <p>email: <a href="mailto:tkursus.digidesa@gmail.com" class="hover:text-teal-600">kursus.digidesa@gmail.com</a></p>
+                <p>Nomor Telepon: <a href="tel:kursus.digidesa@gmail.com" class="hover:text-teal-600">kursus.digidesa@gmail.com</a></p>
+                <p>Alamat Usaha: Timbang, Kejobong, Purbalingga, Jawa Tengah</p>
+            </div>
+
             <p class="text-xs text-slate-400">&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
         </div>
     </footer>
+
 </div>
 
 <!-- Notifications -->

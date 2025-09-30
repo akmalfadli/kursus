@@ -77,16 +77,19 @@ class PaymentController extends Controller
             $amount = config('course.price', 299000);
 
             // Create or find user
+            $password = Str::random(12);
             $user = User::firstOrCreate(
                 ['email' => $request->email],
                 [
                     'name' => $request->name,
-                    'password' => Hash::make(Str::random(12)),
+                    'password' => Hash::make($password),
                     'phone' => $request->phone,
                     'role' => 'customer',
                     'is_active' => true,
                 ]
             );
+
+            // Send email with $password to user
 
             // Create transaction record
             $transaction = Transaction::create([
