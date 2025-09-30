@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\Route;
 // Landing page
 Route::get('/', [LandingPageController::class, 'index'])->name('landing');
 
+// Legal pages
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/terms-of-service', function () {
+    return view('terms-of-service');
+})->name('terms-of-service');
+
 // Payment routes
 Route::prefix('payment')->name('payment.')->group(function () {
     // Step 1: Get available payment methods
