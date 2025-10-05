@@ -27,7 +27,7 @@
                             <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 border-2 border-white"></div>
                         </div>
                         <span class="text-sm font-medium text-slate-700">
-                            <span class="text-orange-600 font-bold">500+</span> Peserta Lulus
+                            <span class="text-orange-600 font-bold">Pemateri</span> Berpengalaman
                         </span>
                     </div>
 
@@ -36,13 +36,13 @@
                     </h1>
 
                     <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                        Persiapan lengkap dengan <strong>1000+ soal latihan</strong>, video pembelajaran, dan mentoring langsung. Tingkatkan peluang Anda hingga <span class="text-orange-600 font-bold">95%</span>!
+                        Persiapan lengkap dengan <strong>soal latihan</strong>, video pembelajaran, dan mentoring langsung. Tingkatkan peluang Anda hingga <span class="text-orange-600 font-bold">95%</span>!
                     </p>
 
                     <!-- Key Stats -->
                     <div class="grid grid-cols-3 gap-4 mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100">
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-orange-600">1000+</div>
+                            <div class="text-3xl font-bold text-orange-600">100+</div>
                             <div class="text-xs text-slate-600">Soal Latihan</div>
                         </div>
                         <div class="text-center border-x border-slate-200">
@@ -142,7 +142,7 @@
         </div>
     </section>
 
-    <!-- Testimonials - Compact Carousel Style -->
+    <!-- Testimonials - Compact Carousel Style
     <section class="py-16 px-4 bg-gradient-to-br from-orange-50 to-red-50">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-12">
@@ -176,7 +176,7 @@
                 @endforeach
             </div>
         </div>
-    </section>
+    </section> -->
 
     <!-- Pricing Section - Bold & Clear -->
     <section id="pricing" class="py-16 px-4 bg-white">
@@ -215,7 +215,7 @@
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span class="text-slate-700"><strong>1000+</strong> Soal Latihan Premium</span>
+                            <span class="text-slate-700"><strong>100+</strong> Soal Latihan Premium</span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -223,7 +223,7 @@
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span class="text-slate-700">Video HD <strong>20+ Jam</strong></span>
+                            <span class="text-slate-700">Video HD</span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
