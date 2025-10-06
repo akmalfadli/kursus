@@ -223,7 +223,7 @@
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span class="text-slate-700">Video HD</span>
+                            <span class="text-slate-700">Zoom Meeting & Recording</span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -400,7 +400,7 @@
                         <div class="text-red-600 font-bold text-md mb-1">DISKON 60%</div>
                         <div class="flex items-center justify-center gap-3">
                             <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
-                            <span class="text-2xl font-bold text-red-600">Rp 199.000</span>
+                            <span class="text-2xl font-bold text-red-600">Rp {{ number_format($content['price'], 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>

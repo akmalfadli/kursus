@@ -1,10 +1,10 @@
 <?php
-// app/Http/Controllers/PaymentController.php (Updated with Payment Methods)
 
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\ContentBlock; // Add this import
 use App\Mail\PaymentConfirmation;
 use App\Mail\NewTransactionNotification;
 use Illuminate\Http\Request;
@@ -26,7 +26,8 @@ class PaymentController extends Controller
         ]);
 
         try {
-            $amount = config('course.price', 299000);
+            // Get price dynamically from database
+            $amount = $this->getCoursePrice();
 
             // Get available payment methods from Duitku
             $paymentMethods = $this->fetchDuitkuPaymentMethods($amount);
@@ -69,12 +70,14 @@ class PaymentController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'payment_method' => 'required|string|max:10', // User selected payment method
+            'payment_method' => 'required|string|max:10',
         ]);
 
         try {
             $invoiceId = 'KPD-' . now()->format('YmdHis') . '-' . Str::random(6);
-            $amount = config('course.price', 299000);
+
+            // Get price dynamically from database
+            $amount = $this->getCoursePrice();
 
             // Create or find user
             $password = Str::random(12);
@@ -89,7 +92,7 @@ class PaymentController extends Controller
                 ]
             );
 
-            // Send email with $password to user
+            // TODO: Send email with $password to user if newly created
 
             // Create transaction record
             $transaction = Transaction::create([
@@ -99,7 +102,7 @@ class PaymentController extends Controller
                 'user_phone' => $request->phone,
                 'amount' => $amount,
                 'payment_status' => 'pending',
-                'payment_method' => $request->payment_method, // Store selected method
+                'payment_method' => $request->payment_method,
             ]);
 
             // Create Duitku payment with selected method
@@ -107,7 +110,7 @@ class PaymentController extends Controller
                 'invoice_id' => $invoiceId,
                 'amount' => $amount,
                 'payment_method' => $request->payment_method,
-                'product_details' => config('course.name', 'Kursus Ujian Perangkat Desa'),
+                'product_details' => $this->getCourseDetails(),
                 'customer_name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
@@ -152,130 +155,67 @@ class PaymentController extends Controller
         }
     }
 
-    // Get payment methods from Duitku API
-    private function fetchDuitkuPaymentMethods(int $amount): ?array
+    /**
+     * Get course price dynamically from database
+     *
+     * @return int
+     */
+    private function getCoursePrice(): int
     {
-        $merchantCode = config('services.duitku.merchant_code');
-        $apiKey = config('services.duitku.api_key');
-        $environment = config('services.duitku.environment', 'sandbox');
-
-        $baseUrl = $environment === 'production'
-            ? 'https://passport.duitku.com/webapi/api/merchant/'
-            : 'https://sandbox.duitku.com/webapi/api/merchant/';
-
-        $datetime = now()->format('Y-m-d H:i:s');
-
-        // Generate signature: SHA256(merchantCode + paymentAmount + datetime + apiKey)
-        $signature = hash('sha256', $merchantCode . $amount . $datetime . $apiKey);
-
-        $data = [
-            'merchantcode' => $merchantCode,
-            'amount' => $amount,
-            'datetime' => $datetime,
-            'signature' => $signature
-        ];
-
         try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($baseUrl . 'paymentmethod/getpaymentmethod', $data);
+            // Get price from ContentBlock database
+            $price = ContentBlock::getNumberValue('course_price', config('course.price', 299000));
 
-            Log::info('Duitku Payment Methods Request', [
-                'url' => $baseUrl . 'paymentmethod/getpaymentmethod',
-                'data' => array_merge($data, ['signature' => 'HIDDEN'])
-            ]);
+            // Ensure price is a valid positive number
+            $price = (int) $price;
 
-            $responseData = $response->json();
-            Log::info('Duitku Payment Methods Response', ['response' => $responseData]);
-
-            if ($response->successful() &&
-                isset($responseData['responseCode']) &&
-                $responseData['responseCode'] === '00') {
-
-                return $responseData['paymentFee'] ?? [];
+            if ($price <= 0) {
+                Log::warning('Invalid course price from database, using fallback', [
+                    'database_price' => $price,
+                    'fallback_price' => config('course.price', 299000)
+                ]);
+                return (int) config('course.price', 299000);
             }
 
-            return null;
+            Log::info('Course price loaded from database', ['price' => $price]);
+
+            return $price;
 
         } catch (\Exception $e) {
-            Log::error('Duitku Payment Methods Error', [
+            Log::error('Failed to get course price from database', [
                 'error' => $e->getMessage(),
-                'merchant_code' => $merchantCode
+                'fallback_price' => config('course.price', 299000)
             ]);
-            return null;
+
+            // Fallback to config if database fails
+            return (int) config('course.price', 299000);
         }
     }
 
-    // Updated createDuitkuInvoice to accept payment method
-    private function createDuitkuInvoice(array $params): array
+    /**
+     * Get course details dynamically from database or config
+     *
+     * @return string
+     */
+    private function getCourseDetails(): string
     {
-        $merchantCode = config('services.duitku.merchant_code');
-        $apiKey = config('services.duitku.api_key');
-        $environment = config('services.duitku.environment', 'sandbox');
-
-        $baseUrl = $environment === 'production'
-            ? 'https://passport.duitku.com/webapi/api/merchant/'
-            : 'https://sandbox.duitku.com/webapi/api/merchant/';
-
-        // Prepare payment data with selected payment method
-        $paymentData = [
-            'merchantCode' => $merchantCode,
-            'paymentAmount' => $params['amount'],
-            'paymentMethod' => $params['payment_method'], // Use selected method
-            'merchantOrderId' => $params['invoice_id'],
-            'productDetails' => $params['product_details'],
-            'customerVaName' => $params['customer_name'],
-            'email' => $params['email'],
-            'phoneNumber' => $this->formatPhoneNumber($params['phone'] ?? ''),
-            'callbackUrl' => $params['callback_url'],
-            'returnUrl' => $params['return_url'],
-            'expiryPeriod' => 60, // 60 minutes
-        ];
-
-        // Generate signature: MD5(merchantCode + merchantOrderId + paymentAmount + apiKey)
-        $signature = md5(
-            $merchantCode .
-            $paymentData['merchantOrderId'] .
-            $paymentData['paymentAmount'] .
-            $apiKey
-        );
-        $paymentData['signature'] = $signature;
-
         try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($baseUrl . 'v2/inquiry', $paymentData);
+            // Try to get course name from ContentBlock
+            $courseName = ContentBlock::getValue('hero_title', config('course.name', 'Kursus Ujian Perangkat Desa'));
 
-            Log::info('Duitku Transaction Request', [
-                'url' => $baseUrl . 'v2/inquiry',
-                'data' => array_merge($paymentData, ['signature' => 'HIDDEN'])
-            ]);
-
-            $responseData = $response->json();
-            Log::info('Duitku Transaction Response', ['response' => $responseData]);
-
-            if ($response->successful() && isset($responseData['statusCode'])) {
-                return $responseData;
-            }
-
-            $errorMessage = $responseData['statusMessage'] ?? 'Unknown API error';
-            throw new \Exception("Duitku API Error: {$errorMessage}");
+            return !empty($courseName) ? $courseName : config('course.name', 'Kursus Ujian Perangkat Desa');
 
         } catch (\Exception $e) {
-            Log::error('Duitku Service Error', [
-                'error' => $e->getMessage(),
-                'environment' => $environment,
-                'merchant_code' => $merchantCode
+            Log::error('Failed to get course details from database', [
+                'error' => $e->getMessage()
             ]);
-            throw $e;
+
+            return config('course.name', 'Kursus Ujian Perangkat Desa');
         }
     }
 
-    // Rest of the methods remain the same...
+    // ... rest of your existing methods (callback, thankYou, checkStatus, etc.) remain the same
+
     public function callback(Request $request)
     {
         Log::info('Duitku callback received', $request->all());
@@ -494,6 +434,119 @@ class PaymentController extends Controller
             $this->sendPaymentConfirmation($transaction);
         } elseif ($statusCode === '02') {
             $transaction->update(['payment_status' => 'failed']);
+        }
+    }
+
+    // Keep existing Duitku methods
+    private function fetchDuitkuPaymentMethods(int $amount): ?array
+    {
+        $merchantCode = config('services.duitku.merchant_code');
+        $apiKey = config('services.duitku.api_key');
+        $environment = config('services.duitku.environment', 'sandbox');
+
+        $baseUrl = $environment === 'production'
+            ? 'https://passport.duitku.com/webapi/api/merchant/'
+            : 'https://sandbox.duitku.com/webapi/api/merchant/';
+
+        $datetime = now()->format('Y-m-d H:i:s');
+        $signature = hash('sha256', $merchantCode . $amount . $datetime . $apiKey);
+
+        $data = [
+            'merchantcode' => $merchantCode,
+            'amount' => $amount,
+            'datetime' => $datetime,
+            'signature' => $signature
+        ];
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($baseUrl . 'paymentmethod/getpaymentmethod', $data);
+
+            Log::info('Duitku Payment Methods Request', [
+                'url' => $baseUrl . 'paymentmethod/getpaymentmethod',
+                'data' => array_merge($data, ['signature' => 'HIDDEN'])
+            ]);
+
+            $responseData = $response->json();
+            Log::info('Duitku Payment Methods Response', ['response' => $responseData]);
+
+            if ($response->successful() &&
+                isset($responseData['responseCode']) &&
+                $responseData['responseCode'] === '00') {
+                return $responseData['paymentFee'] ?? [];
+            }
+
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Duitku Payment Methods Error', [
+                'error' => $e->getMessage(),
+                'merchant_code' => $merchantCode
+            ]);
+            return null;
+        }
+    }
+
+    private function createDuitkuInvoice(array $params): array
+    {
+        $merchantCode = config('services.duitku.merchant_code');
+        $apiKey = config('services.duitku.api_key');
+        $environment = config('services.duitku.environment', 'sandbox');
+
+        $baseUrl = $environment === 'production'
+            ? 'https://passport.duitku.com/webapi/api/merchant/'
+            : 'https://sandbox.duitku.com/webapi/api/merchant/';
+
+        $paymentData = [
+            'merchantCode' => $merchantCode,
+            'paymentAmount' => $params['amount'],
+            'paymentMethod' => $params['payment_method'],
+            'merchantOrderId' => $params['invoice_id'],
+            'productDetails' => $params['product_details'],
+            'customerVaName' => $params['customer_name'],
+            'email' => $params['email'],
+            'phoneNumber' => $this->formatPhoneNumber($params['phone'] ?? ''),
+            'callbackUrl' => $params['callback_url'],
+            'returnUrl' => $params['return_url'],
+            'expiryPeriod' => 60,
+        ];
+
+        $signature = md5(
+            $merchantCode .
+            $paymentData['merchantOrderId'] .
+            $paymentData['paymentAmount'] .
+            $apiKey
+        );
+        $paymentData['signature'] = $signature;
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($baseUrl . 'v2/inquiry', $paymentData);
+
+            Log::info('Duitku Transaction Request', [
+                'url' => $baseUrl . 'v2/inquiry',
+                'data' => array_merge($paymentData, ['signature' => 'HIDDEN'])
+            ]);
+
+            $responseData = $response->json();
+            Log::info('Duitku Transaction Response', ['response' => $responseData]);
+
+            if ($response->successful() && isset($responseData['statusCode'])) {
+                return $responseData;
+            }
+
+            $errorMessage = $responseData['statusMessage'] ?? 'Unknown API error';
+            throw new \Exception("Duitku API Error: {$errorMessage}");
+
+        } catch (\Exception $e) {
+            Log::error('Duitku Service Error', [
+                'error' => $e->getMessage(),
+                'environment' => $environment,
+                'merchant_code' => $merchantCode
+            ]);
+            throw $e;
         }
     }
 }

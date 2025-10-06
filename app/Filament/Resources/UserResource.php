@@ -17,7 +17,10 @@ use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Mail\WelcomeEmail;
+use Illuminate\Support\Facades\Mail;
 
 class UserResource extends Resource
 {
@@ -199,12 +202,39 @@ class UserResource extends Resource
                     ->icon('heroicon-o-paper-airplane')
                     ->color('info')
                     ->requiresConfirmation()
+                    ->modalHeading('Kirim Email Selamat Datang')
+                    ->modalDescription('Email akan dikirim dengan password sementara baru. Apakah Anda yakin?')
                     ->action(function (User $record) {
-                        // TODO: Send welcome email
-                        Notification::make()
-                            ->title('Email selamat datang berhasil dikirim!')
-                            ->success()
-                            ->send();
+                        try {
+                            // Generate temporary password
+                            $tempPassword = Str::random(12);
+
+                            // Update user password
+                            $record->update([
+                                'password' => Hash::make($tempPassword)
+                            ]);
+
+                            // Send welcome email
+                            Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+
+                            Notification::make()
+                                ->title('Email selamat datang berhasil dikirim!')
+                                ->body('Password baru telah dikirim ke ' . $record->email)
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Log::error('Failed to send welcome email', [
+                                'error' => $e->getMessage(),
+                                'user_id' => $record->id
+                            ]);
+
+                            Notification::make()
+                                ->title('Gagal mengirim email!')
+                                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     }),
 
                 Action::make('reset_password')

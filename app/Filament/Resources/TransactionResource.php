@@ -19,6 +19,11 @@ use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class TransactionResource extends Resource
 {
@@ -250,12 +255,38 @@ class TransactionResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Kirim Akses Kursus')
                     ->modalDescription('Apakah Anda yakin ingin mengirim email akses kursus ke customer?')
-                    ->action(function (Transaction $record) {
+                    ->action(function (User $record) {
                         // TODO: Send course access email
-                        Notification::make()
-                            ->title('Email akses berhasil dikirim!')
-                            ->success()
-                            ->send();
+                        try {
+                            // Generate temporary password
+                            $tempPassword = Str::random(12);
+
+                            // Update user password
+                            $record->update([
+                                'password' => Hash::make($tempPassword)
+                            ]);
+
+                            // Send welcome email
+                            Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+
+                            Notification::make()
+                                ->title('Email selamat datang berhasil dikirim!')
+                                ->body('Password baru telah dikirim ke ' . $record->email)
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Log::error('Failed to send welcome email', [
+                                'error' => $e->getMessage(),
+                                'user_id' => $record->id
+                            ]);
+
+                            Notification::make()
+                                ->title('Gagal mengirim email!')
+                                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     })
                     ->visible(fn (Transaction $record) => $record->payment_status === 'paid'),
 
