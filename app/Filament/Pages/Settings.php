@@ -36,6 +36,12 @@ class Settings extends Page implements HasForms
             'contact_email' => ContentBlock::getValue('contact_email'),
             'contact_phone' => ContentBlock::getValue('contact_phone'),
             'site_maintenance' => ContentBlock::getBooleanValue('site_maintenance'),
+            'default_class' => ContentBlock::getValue('default_class', 'Kelas Umum'),
+
+            // API Integration settings
+            'api_enabled' => ContentBlock::getBooleanValue('api_enabled'),
+            'api_trigger_url' => ContentBlock::getValue('api_trigger_url'),
+            'api_bearer_token' => ContentBlock::getValue('api_bearer_token'),
         ]);
     }
 
@@ -46,6 +52,7 @@ class Settings extends Page implements HasForms
                 Tabs::make('Settings')
                     ->tabs([
                         Tabs\Tab::make('Umum')
+                            ->icon('heroicon-o-home')
                             ->schema([
                                 Section::make('Informasi Situs')
                                     ->schema([
@@ -62,10 +69,16 @@ class Settings extends Page implements HasForms
                                             ->numeric()
                                             ->prefix('Rp')
                                             ->required(),
+                                        TextInput::make('default_class')
+                                            ->label('Kelas Default')
+                                            ->helperText('Kelas yang akan diberikan kepada siswa baru')
+                                            ->required()
+                                            ->maxLength(100),
                                     ])->columns(1),
                             ]),
 
                         Tabs\Tab::make('Kontak')
+                            ->icon('heroicon-o-envelope')
                             ->schema([
                                 Section::make('Informasi Kontak')
                                     ->schema([
@@ -80,7 +93,47 @@ class Settings extends Page implements HasForms
                                     ])->columns(2),
                             ]),
 
+                        Tabs\Tab::make('API Integration')
+                            ->icon('heroicon-o-arrow-path-rounded-square')
+                            ->schema([
+                                Section::make('Pengaturan API')
+                                    ->description('Konfigurasi API untuk mengirim data siswa baru setelah pembayaran sukses')
+                                    ->schema([
+                                        Toggle::make('api_enabled')
+                                            ->label('Aktifkan API Integration')
+                                            ->helperText('Otomatis kirim data siswa ke API setelah pembayaran berhasil')
+                                            ->reactive(),
+
+                                        TextInput::make('api_trigger_url')
+                                            ->label('API Endpoint URL')
+                                            ->helperText('Contoh: https://api.example.com/functions/v1/add-siswa')
+                                            ->url()
+                                            ->required()
+                                            ->placeholder('https://api.example.com/functions/v1/add-siswa')
+                                            ->visible(fn ($get) => $get('api_enabled')),
+
+                                        TextInput::make('api_bearer_token')
+                                            ->label('Bearer Token')
+                                            ->helperText('Token untuk autentikasi API')
+                                            ->password()
+                                            ->revealable()
+                                            ->required()
+                                            ->placeholder('your-secret-bearer-token')
+                                            ->visible(fn ($get) => $get('api_enabled')),
+                                    ])->columns(1)
+                                    ->collapsible(),
+
+                                Section::make('Informasi API')
+                                    ->schema([
+                                        \Filament\Forms\Components\Placeholder::make('api_info')
+                                            ->label('')
+                                            ->content(view('filament.components.api-info')),
+                                    ])
+                                    ->visible(fn ($get) => $get('api_enabled')),
+                            ]),
+
                         Tabs\Tab::make('Sistem')
+                            ->icon('heroicon-o-wrench-screwdriver')
                             ->schema([
                                 Section::make('Pengaturan Sistem')
                                     ->schema([
@@ -99,12 +152,19 @@ class Settings extends Page implements HasForms
     {
         $data = $this->form->getState();
 
+        // Save general settings
         ContentBlock::setValue('hero_title', 'Hero Title', $data['hero_title'], 'text');
         ContentBlock::setValue('hero_subtitle', 'Hero Subtitle', $data['hero_subtitle'], 'textarea');
         ContentBlock::setValue('course_price', 'Harga Kursus', $data['course_price'], 'number');
         ContentBlock::setValue('contact_email', 'Email Support', $data['contact_email'], 'text');
         ContentBlock::setValue('contact_phone', 'Nomor WhatsApp', $data['contact_phone'], 'text');
         ContentBlock::setValue('site_maintenance', 'Mode Maintenance', $data['site_maintenance'], 'boolean');
+        ContentBlock::setValue('default_class', 'Default Class', $data['default_class'], 'text');
+
+        // Save API settings
+        ContentBlock::setValue('api_enabled', 'Enable API Integration', $data['api_enabled'], 'boolean');
+        ContentBlock::setValue('api_trigger_url', 'API Trigger URL', $data['api_trigger_url'] ?? '', 'text');
+        ContentBlock::setValue('api_bearer_token', 'API Bearer Token', $data['api_bearer_token'] ?? '', 'text');
 
         Notification::make()
             ->title('Pengaturan berhasil disimpan!')

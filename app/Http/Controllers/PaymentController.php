@@ -154,6 +154,200 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+    public function callback(Request $request)
+    {
+        Log::info('Duitku callback received', $request->all());
+
+        try {
+            if (!$this->verifyDuitkuCallback($request->all())) {
+                Log::warning('Invalid callback signature', $request->all());
+                return response('Invalid signature', 400);
+            }
+
+            $merchantOrderId = $request->merchantOrderId;
+            $resultCode = $request->resultCode;
+
+            $transaction = Transaction::where('invoice_id', $merchantOrderId)->first();
+
+            if (!$transaction) {
+                Log::warning('Transaction not found', ['invoice_id' => $merchantOrderId]);
+                return response('Transaction not found', 404);
+            }
+
+            if ($resultCode === '00') {
+                // Update transaction status
+                $transaction->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => $request->paymentCode ?? $transaction->payment_method,
+                    'payment_reference' => $request->reference ?? null,
+                    'paid_at' => now(),
+                ]);
+
+                Log::info('Payment successful', ['invoice_id' => $merchantOrderId]);
+
+                // Send notifications
+                $this->sendPaymentConfirmation($transaction);
+                $this->notifyAdminPaymentSuccess($transaction);
+
+                // TRIGGER API INTEGRATION
+                $this->triggerApiIntegration($transaction);
+
+            } elseif ($resultCode === '01') {
+                $transaction->update(['payment_status' => 'pending']);
+                Log::info('Payment pending', ['invoice_id' => $merchantOrderId]);
+            } else {
+                $transaction->update(['payment_status' => 'failed']);
+                Log::info('Payment failed', ['invoice_id' => $merchantOrderId, 'result_code' => $resultCode]);
+            }
+
+            return response('OK', 200);
+
+        } catch (\Exception $e) {
+            Log::error('Callback processing failed', [
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
+            return response('Error processing callback', 500);
+        }
+    }
+
+    /**
+     * Trigger API Integration setelah pembayaran sukses
+     */
+    private function triggerApiIntegration(Transaction $transaction): void
+    {
+        try {
+            // Check if API integration is enabled
+            $apiEnabled = ContentBlock::getBooleanValue('api_enabled', false);
+
+            if (!$apiEnabled) {
+                Log::info('API Integration disabled, skipping', ['invoice_id' => $transaction->invoice_id]);
+                return;
+            }
+
+            // Get API settings
+            $apiUrl = ContentBlock::getValue('api_trigger_url');
+            $bearerToken = ContentBlock::getValue('api_bearer_token');
+            $defaultClass = ContentBlock::getValue('default_class', 'Kelas Umum');
+
+            if (empty($apiUrl) || empty($bearerToken)) {
+                Log::warning('API settings incomplete, skipping integration', [
+                    'invoice_id' => $transaction->invoice_id,
+                    'has_url' => !empty($apiUrl),
+                    'has_token' => !empty($bearerToken)
+                ]);
+                return;
+            }
+
+            // Find or create user
+            $user = User::where('email', $transaction->user_email)->first();
+
+            // Generate temporary password
+            $tempPassword = Str::random(12);
+
+            if (!$user) {
+                // Create new user with temporary password
+                $user = User::create([
+                    'name' => $transaction->user_name,
+                    'email' => $transaction->user_email,
+                    'password' => Hash::make($tempPassword),
+                    'phone' => $transaction->user_phone,
+                    'role' => 'customer',
+                    'is_active' => true,
+                ]);
+
+                Log::info('New user created for API integration', [
+                    'user_id' => $user->id,
+                    'email' => $user->email
+                ]);
+            } else {
+                // Update existing user password
+                $user->update([
+                    'password' => Hash::make($tempPassword)
+                ]);
+
+                Log::info('Existing user password updated for API integration', [
+                    'user_id' => $user->id,
+                    'email' => $user->email
+                ]);
+            }
+
+            // Prepare API payload
+            $payload = [
+                'email' => $transaction->user_email,
+                'password' => $tempPassword,
+                'name' => $transaction->user_name,
+                'class' => $defaultClass
+            ];
+
+            // Send API request
+            Log::info('Sending API request', [
+                'url' => $apiUrl,
+                'invoice_id' => $transaction->invoice_id,
+                'payload' => array_merge($payload, ['password' => '***HIDDEN***']) // Hide password in logs
+            ]);
+
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $bearerToken,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])
+                ->post($apiUrl, $payload);
+
+            // Log response
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                Log::info('API request successful', [
+                    'invoice_id' => $transaction->invoice_id,
+                    'status_code' => $response->status(),
+                    'response' => $responseData
+                ]);
+
+                // Send email with credentials to user
+                $this->sendCredentialsEmail($user, $tempPassword);
+
+            } else {
+                Log::error('API request failed', [
+                    'invoice_id' => $transaction->invoice_id,
+                    'status_code' => $response->status(),
+                    'response' => $response->body()
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('API Integration error', [
+                'invoice_id' => $transaction->invoice_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Don't throw exception - we don't want to break the payment callback
+            // Just log the error and continue
+        }
+    }
+
+    /**
+     * Send credentials email to user
+     */
+    private function sendCredentialsEmail(User $user, string $tempPassword): void
+    {
+        try {
+            // You can create a new Mailable for this or use existing WelcomeEmail
+            Mail::to($user->email)->send(new \App\Mail\WelcomeEmail($user, $tempPassword));
+
+            Log::info('Credentials email sent', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send credentials email', [
+                'error' => $e->getMessage(),
+                'user_id' => $user->id
+            ]);
+        }
+    }
 
     /**
      * Get course price dynamically from database
@@ -211,59 +405,6 @@ class PaymentController extends Controller
             ]);
 
             return config('course.name', 'Kursus Ujian Perangkat Desa');
-        }
-    }
-
-    // ... rest of your existing methods (callback, thankYou, checkStatus, etc.) remain the same
-
-    public function callback(Request $request)
-    {
-        Log::info('Duitku callback received', $request->all());
-
-        try {
-            if (!$this->verifyDuitkuCallback($request->all())) {
-                Log::warning('Invalid callback signature', $request->all());
-                return response('Invalid signature', 400);
-            }
-
-            $merchantOrderId = $request->merchantOrderId;
-            $resultCode = $request->resultCode;
-
-            $transaction = Transaction::where('invoice_id', $merchantOrderId)->first();
-
-            if (!$transaction) {
-                Log::warning('Transaction not found', ['invoice_id' => $merchantOrderId]);
-                return response('Transaction not found', 404);
-            }
-
-            if ($resultCode === '00') {
-                $transaction->update([
-                    'payment_status' => 'paid',
-                    'payment_method' => $request->paymentCode ?? $transaction->payment_method,
-                    'payment_reference' => $request->reference ?? null,
-                    'paid_at' => now(),
-                ]);
-
-                Log::info('Payment successful', ['invoice_id' => $merchantOrderId]);
-                $this->sendPaymentConfirmation($transaction);
-                $this->notifyAdminPaymentSuccess($transaction);
-
-            } elseif ($resultCode === '01') {
-                $transaction->update(['payment_status' => 'pending']);
-                Log::info('Payment pending', ['invoice_id' => $merchantOrderId]);
-            } else {
-                $transaction->update(['payment_status' => 'failed']);
-                Log::info('Payment failed', ['invoice_id' => $merchantOrderId, 'result_code' => $resultCode]);
-            }
-
-            return response('OK', 200);
-
-        } catch (\Exception $e) {
-            Log::error('Callback processing failed', [
-                'error' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
-            return response('Error processing callback', 500);
         }
     }
 

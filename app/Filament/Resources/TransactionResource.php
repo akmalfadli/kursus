@@ -255,30 +255,38 @@ class TransactionResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Kirim Akses Kursus')
                     ->modalDescription('Apakah Anda yakin ingin mengirim email akses kursus ke customer?')
-                    ->action(function (User $record) {
-                        // TODO: Send course access email
+                    ->action(function (Transaction $record) {  // Changed from User to Transaction
                         try {
+                            // Find or create user based on transaction email
+                            $user = User::firstOrCreate(
+                                ['email' => $record->user_email],
+                                [
+                                    'name' => $record->user_name,
+                                    'phone' => $record->user_phone,
+                                ]
+                            );
+
                             // Generate temporary password
                             $tempPassword = Str::random(12);
 
                             // Update user password
-                            $record->update([
+                            $user->update([
                                 'password' => Hash::make($tempPassword)
                             ]);
 
                             // Send welcome email
-                            Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+                            Mail::to($user->email)->send(new WelcomeEmail($user, $tempPassword));
 
                             Notification::make()
                                 ->title('Email selamat datang berhasil dikirim!')
-                                ->body('Password baru telah dikirim ke ' . $record->email)
+                                ->body('Password baru telah dikirim ke ' . $user->email)
                                 ->success()
                                 ->send();
 
                         } catch (\Exception $e) {
                             Log::error('Failed to send welcome email', [
                                 'error' => $e->getMessage(),
-                                'user_id' => $record->id
+                                'transaction_id' => $record->id  // Changed from user_id
                             ]);
 
                             Notification::make()

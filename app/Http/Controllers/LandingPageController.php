@@ -23,6 +23,7 @@ class LandingPageController extends Controller
             'course_name' => config('course.name', 'Kursus Ujian Perangkat Desa'),
             'contact_email' => ContentBlock::getValue('contact_email', 'support@example.com'),
             'contact_phone' => ContentBlock::getValue('contact_phone', '+62 812-3456-7890'),
+            'default_class' => ContentBlock::getValue('default_class', 'Batch 1'),
 
             // Stats for social proof
             'total_students' => User::where('role', 'customer')->count(),

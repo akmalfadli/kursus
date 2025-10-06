@@ -11,6 +11,40 @@ class ContentBlockSeeder extends Seeder
     public function run(): void
     {
         $contentBlocks = [
+                        // API Integration Settings
+            [
+                'key' => 'api_trigger_url',
+                'title' => 'API Trigger URL',
+                'content' => '',
+                'type' => 'text',
+                'description' => 'URL endpoint untuk trigger API setelah pembayaran sukses',
+                'is_active' => true
+            ],
+            [
+                'key' => 'api_bearer_token',
+                'title' => 'API Bearer Token',
+                'content' => '',
+                'type' => 'text',
+                'description' => 'Bearer token untuk autentikasi API',
+                'is_active' => true
+            ],
+            [
+                'key' => 'api_enabled',
+                'title' => 'Enable API Integration',
+                'content' => '0',
+                'type' => 'boolean',
+                'description' => 'Aktifkan integrasi API setelah pembayaran sukses',
+                'is_active' => true
+            ],
+            [
+                'key' => 'default_class',
+                'title' => 'Default Class/Kelas',
+                'content' => 'Kelas Umum',
+                'type' => 'text',
+                'description' => 'Kelas default untuk siswa baru',
+                'is_active' => true
+            ],
+
             [
                 'key' => 'hero_title',
                 'title' => 'Hero Title',
