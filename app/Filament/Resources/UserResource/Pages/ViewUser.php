@@ -34,7 +34,13 @@ class ViewUser extends ViewRecord
                             ->copyable(),
                         Infolists\Components\TextEntry::make('phone')
                             ->label('Telepon')
-                            ->copyable(),
+                            ->copyable()
+                            ->placeholder('Tidak ada'),
+                        Infolists\Components\TextEntry::make('class')
+                            ->label('Kelas')
+                            ->badge()
+                            ->color('info')
+                            ->placeholder('Belum ditentukan'),
                         Infolists\Components\TextEntry::make('role')
                             ->label('Role')
                             ->badge(),
@@ -43,7 +49,8 @@ class ViewUser extends ViewRecord
                             ->boolean(),
                         Infolists\Components\TextEntry::make('email_verified_at')
                             ->label('Email Diverifikasi')
-                            ->dateTime(),
+                            ->dateTime()
+                            ->placeholder('Belum diverifikasi'),
                     ])->columns(3),
 
                 Infolists\Components\Section::make('Statistik Transaksi')

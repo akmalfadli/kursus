@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\User;
-use App\Models\ContentBlock; // Add this import
+use App\Models\ContentBlock;
 use App\Mail\PaymentConfirmation;
 use App\Mail\NewTransactionNotification;
 use Illuminate\Http\Request;
@@ -79,6 +79,9 @@ class PaymentController extends Controller
             // Get price dynamically from database
             $amount = $this->getCoursePrice();
 
+            // Get default class from database
+            $defaultClass = $this->getDefaultClass();
+
             // Create or find user
             $password = Str::random(12);
             $user = User::firstOrCreate(
@@ -89,10 +92,21 @@ class PaymentController extends Controller
                     'phone' => $request->phone,
                     'role' => 'customer',
                     'is_active' => true,
+                    'class' => $defaultClass, // Add default class here
                 ]
             );
 
-            // TODO: Send email with $password to user if newly created
+            // If user already exists, update the class if it's not set
+            if ($user->wasRecentlyCreated === false && empty($user->class)) {
+                $user->update(['class' => $defaultClass]);
+            }
+
+            Log::info('User created/updated with class', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'class' => $user->class,
+                'was_recently_created' => $user->wasRecentlyCreated
+            ]);
 
             // Create transaction record
             $transaction = Transaction::create([
@@ -154,6 +168,7 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
     public function callback(Request $request)
     {
         Log::info('Duitku callback received', $request->all());
@@ -228,7 +243,7 @@ class PaymentController extends Controller
             // Get API settings
             $apiUrl = ContentBlock::getValue('api_trigger_url');
             $bearerToken = ContentBlock::getValue('api_bearer_token');
-            $defaultClass = ContentBlock::getValue('default_class', 'Kelas Umum');
+            $defaultClass = $this->getDefaultClass();
 
             if (empty($apiUrl) || empty($bearerToken)) {
                 Log::warning('API settings incomplete, skipping integration', [
@@ -246,7 +261,7 @@ class PaymentController extends Controller
             $tempPassword = Str::random(12);
 
             if (!$user) {
-                // Create new user with temporary password
+                // Create new user with temporary password and default class
                 $user = User::create([
                     'name' => $transaction->user_name,
                     'email' => $transaction->user_email,
@@ -254,21 +269,29 @@ class PaymentController extends Controller
                     'phone' => $transaction->user_phone,
                     'role' => 'customer',
                     'is_active' => true,
+                    'class' => $defaultClass, // Add default class here
                 ]);
 
                 Log::info('New user created for API integration', [
                     'user_id' => $user->id,
-                    'email' => $user->email
+                    'email' => $user->email,
+                    'class' => $user->class
                 ]);
             } else {
-                // Update existing user password
-                $user->update([
-                    'password' => Hash::make($tempPassword)
-                ]);
+                // Update existing user password and class if not set
+                $updateData = ['password' => Hash::make($tempPassword)];
+
+                if (empty($user->class)) {
+                    $updateData['class'] = $defaultClass;
+                }
+
+                $user->update($updateData);
 
                 Log::info('Existing user password updated for API integration', [
                     'user_id' => $user->id,
-                    'email' => $user->email
+                    'email' => $user->email,
+                    'class' => $user->class,
+                    'class_updated' => empty($user->class)
                 ]);
             }
 
@@ -277,7 +300,7 @@ class PaymentController extends Controller
                 'email' => $transaction->user_email,
                 'password' => $tempPassword,
                 'name' => $transaction->user_name,
-                'class' => $defaultClass
+                'class' => $user->class // Use the user's class
             ];
 
             // Send API request
@@ -334,7 +357,6 @@ class PaymentController extends Controller
     private function sendCredentialsEmail(User $user, string $tempPassword): void
     {
         try {
-            // You can create a new Mailable for this or use existing WelcomeEmail
             Mail::to($user->email)->send(new \App\Mail\WelcomeEmail($user, $tempPassword));
 
             Log::info('Credentials email sent', [
@@ -346,6 +368,28 @@ class PaymentController extends Controller
                 'error' => $e->getMessage(),
                 'user_id' => $user->id
             ]);
+        }
+    }
+
+    /**
+     * Get default class from database
+     *
+     * @return string
+     */
+    private function getDefaultClass(): string
+    {
+        try {
+            $defaultClass = ContentBlock::getValue('default_class', 'Batch 1');
+
+            Log::info('Default class loaded from database', ['class' => $defaultClass]);
+
+            return $defaultClass;
+        } catch (\Exception $e) {
+            Log::error('Failed to get default class from database', [
+                'error' => $e->getMessage()
+            ]);
+
+            return 'Kelas Umum'; // Fallback
         }
     }
 
@@ -417,7 +461,12 @@ class PaymentController extends Controller
             $transaction = Transaction::where('invoice_id', $invoiceId)->first();
         }
 
-        return view('thank-you', compact('transaction'));
+     	$content = [
+            'contact_email' => ContentBlock::getValue('contact_email', 'support@example.com'),
+            'contact_phone' => ContentBlock::getValue('contact_phone', '+62 812-3456-7890'),
+        ];
+
+        return view('thank-you', compact('transaction', 'content'));
     }
 
     public function checkStatus(Request $request)

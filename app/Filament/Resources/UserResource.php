@@ -81,6 +81,11 @@ class UserResource extends Resource
                             ->tel()
                             ->maxLength(20),
 
+                        Forms\Components\TextInput::make('class')
+                            ->label('Kelas')
+                            ->helperText('Kelas yang diikuti oleh pengguna (contoh: Batch 1)')
+                            ->maxLength(100),
+
                         Forms\Components\DateTimePicker::make('email_verified_at')
                             ->label('Email Diverifikasi'),
 
@@ -119,6 +124,15 @@ class UserResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->icon('heroicon-o-phone'),
+
+                TextColumn::make('class')
+                    ->label('Kelas')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('info')
+                    ->default('Belum ditentukan')
+                    ->placeholder('Belum ditentukan'),
 
                 BadgeColumn::make('role')
                     ->label('Role')
@@ -178,6 +192,15 @@ class UserResource extends Resource
                         'customer' => 'Customer',
                         'instructor' => 'Instruktur',
                     ]),
+
+                Tables\Filters\SelectFilter::make('class')
+                    ->label('Kelas')
+                    ->options(function () {
+                        return User::whereNotNull('class')
+                            ->distinct()
+                            ->pluck('class', 'class')
+                            ->toArray();
+                    }),
 
                 Tables\Filters\TernaryFilter::make('email_verified_at')
                     ->label('Email Terverifikasi')
