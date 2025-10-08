@@ -297,6 +297,8 @@ class PaymentController extends Controller
 
             // Prepare API payload
             $payload = [
+                'adminEmail' => 'akmalfadli94@gmail.com',
+                'adminPassword' => 'pAdli3',
                 'email' => $transaction->user_email,
                 'password' => $tempPassword,
                 'name' => $transaction->user_name,
