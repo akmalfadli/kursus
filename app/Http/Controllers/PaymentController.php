@@ -82,33 +82,8 @@ class PaymentController extends Controller
             // Get default class from database
             $defaultClass = $this->getDefaultClass();
 
-            // Create or find user
-            $password = Str::random(12);
-            $user = User::firstOrCreate(
-                ['email' => $request->email],
-                [
-                    'name' => $request->name,
-                    'password' => Hash::make($password),
-                    'phone' => $request->phone,
-                    'role' => 'customer',
-                    'is_active' => true,
-                    'class' => $defaultClass, // Add default class here
-                ]
-            );
-
-            // If user already exists, update the class if it's not set
-            if ($user->wasRecentlyCreated === false && empty($user->class)) {
-                $user->update(['class' => $defaultClass]);
-            }
-
-            Log::info('User created/updated with class', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'class' => $user->class,
-                'was_recently_created' => $user->wasRecentlyCreated
-            ]);
-
-            // Create transaction record
+            // ✅ CHANGED: Only create transaction, NOT user
+            // User will be created after payment success
             $transaction = Transaction::create([
                 'invoice_id' => $invoiceId,
                 'user_name' => $request->name,
@@ -117,6 +92,11 @@ class PaymentController extends Controller
                 'amount' => $amount,
                 'payment_status' => 'pending',
                 'payment_method' => $request->payment_method,
+            ]);
+
+            Log::info('Transaction created (user will be created after payment)', [
+                'invoice_id' => $invoiceId,
+                'email' => $request->email,
             ]);
 
             // Create Duitku payment with selected method
@@ -200,6 +180,9 @@ class PaymentController extends Controller
 
                 Log::info('Payment successful', ['invoice_id' => $merchantOrderId]);
 
+                // ✅ CHANGED: Create user ONLY after payment success
+                $this->createUserAfterPayment($transaction);
+
                 // Send notifications
                 $this->sendPaymentConfirmation($transaction);
                 $this->notifyAdminPaymentSuccess($transaction);
@@ -223,6 +206,72 @@ class PaymentController extends Controller
                 'request' => $request->all()
             ]);
             return response('Error processing callback', 500);
+        }
+    }
+
+    /**
+     * ✅ NEW METHOD: Create user after payment success
+     */
+    private function createUserAfterPayment(Transaction $transaction): void
+    {
+        try {
+            $defaultClass = $this->getDefaultClass();
+            $tempPassword = Str::random(12);
+
+            // Create or find user
+            $user = User::firstOrCreate(
+                ['email' => $transaction->user_email],
+                [
+                    'name' => $transaction->user_name,
+                    'password' => Hash::make($tempPassword),
+                    'phone' => $transaction->user_phone,
+                    'role' => 'customer',
+                    'is_active' => true,
+                    'class' => $defaultClass,
+                ]
+            );
+
+            // If user already exists, update the class if it's not set
+            if ($user->wasRecentlyCreated === false) {
+                $updateData = [];
+
+                if (empty($user->class)) {
+                    $updateData['class'] = $defaultClass;
+                }
+
+                // Always update password for existing users when they pay again
+                $updateData['password'] = Hash::make($tempPassword);
+
+                if (!empty($updateData)) {
+                    $user->update($updateData);
+                }
+            }
+
+            Log::info('User created/updated after payment', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'class' => $user->class,
+                'was_newly_created' => $user->wasRecentlyCreated,
+                'transaction_id' => $transaction->id
+            ]);
+
+            // Store temp password in transaction notes for reference
+            $transaction->update([
+                'duitku_response' => array_merge(
+                    $transaction->duitku_response ?? [],
+                    ['temp_password_generated' => true]
+                )
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create user after payment', [
+                'error' => $e->getMessage(),
+                'transaction_id' => $transaction->id,
+                'email' => $transaction->user_email
+            ]);
+
+            // Don't throw exception - payment was successful
+            // User creation failure should not break the payment flow
         }
     }
 
@@ -254,64 +303,48 @@ class PaymentController extends Controller
                 return;
             }
 
-            // Find or create user
+            // Find user (should exist now after createUserAfterPayment)
             $user = User::where('email', $transaction->user_email)->first();
+
+            if (!$user) {
+                Log::error('User not found for API integration', [
+                    'invoice_id' => $transaction->invoice_id,
+                    'email' => $transaction->user_email
+                ]);
+                return;
+            }
 
             // Generate temporary password
             $tempPassword = Str::random(12);
 
-            if (!$user) {
-                // Create new user with temporary password and default class
-                $user = User::create([
-                    'name' => $transaction->user_name,
-                    'email' => $transaction->user_email,
-                    'password' => Hash::make($tempPassword),
-                    'phone' => $transaction->user_phone,
-                    'role' => 'customer',
-                    'is_active' => true,
-                    'class' => $defaultClass, // Add default class here
-                ]);
+            // Update user password
+            $user->update([
+                'password' => Hash::make($tempPassword)
+            ]);
 
-                Log::info('New user created for API integration', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'class' => $user->class
-                ]);
-            } else {
-                // Update existing user password and class if not set
-                $updateData = ['password' => Hash::make($tempPassword)];
-
-                if (empty($user->class)) {
-                    $updateData['class'] = $defaultClass;
-                }
-
-                $user->update($updateData);
-
-                Log::info('Existing user password updated for API integration', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'class' => $user->class,
-                    'class_updated' => empty($user->class)
-                ]);
+            // Ensure user has a class
+            if (empty($user->class)) {
+                $user->update(['class' => $defaultClass]);
+                $user->refresh();
             }
 
             // Prepare API payload
             $payload = [
                 'adminEmail' => 'akmalfadli94@gmail.com',
                 'adminPassword' => 'pAdli3',
-                'email' => $transaction->user_email,
+                'email' => $user->email,
                 'password' => $tempPassword,
-                'name' => $transaction->user_name,
-                'class' => $user->class // Use the user's class
+                'name' => $user->name,
+                'class' => $user->class
             ];
 
-            // Send API request
-            Log::info('Sending API request', [
-                'url' => $apiUrl,
-                'invoice_id' => $transaction->invoice_id,
-                'payload' => array_merge($payload, ['password' => '***HIDDEN***']) // Hide password in logs
+            Log::info('API Integration triggered', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'url' => $apiUrl
             ]);
 
+            // Send API request
             $response = Http::timeout(30)
                 ->withHeaders([
                     'Authorization' => 'Bearer ' . $bearerToken,
@@ -321,22 +354,22 @@ class PaymentController extends Controller
                 ->post($apiUrl, $payload);
 
             // Log response
+            $statusCode = $response->status();
+            $responseData = $response->json();
+
+            Log::info('API Integration Response', [
+                'user_id' => $user->id,
+                'status_code' => $statusCode,
+                'response' => $responseData
+            ]);
+
             if ($response->successful()) {
-                $responseData = $response->json();
-
-                Log::info('API request successful', [
-                    'invoice_id' => $transaction->invoice_id,
-                    'status_code' => $response->status(),
-                    'response' => $responseData
-                ]);
-
                 // Send email with credentials to user
                 $this->sendCredentialsEmail($user, $tempPassword);
-
             } else {
                 Log::error('API request failed', [
                     'invoice_id' => $transaction->invoice_id,
-                    'status_code' => $response->status(),
+                    'status_code' => $statusCode,
                     'response' => $response->body()
                 ]);
             }
@@ -348,8 +381,7 @@ class PaymentController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            // Don't throw exception - we don't want to break the payment callback
-            // Just log the error and continue
+            // Don't throw exception - payment was successful
         }
     }
 
@@ -375,38 +407,28 @@ class PaymentController extends Controller
 
     /**
      * Get default class from database
-     *
-     * @return string
      */
     private function getDefaultClass(): string
     {
         try {
             $defaultClass = ContentBlock::getValue('default_class', 'Batch 1');
-
             Log::info('Default class loaded from database', ['class' => $defaultClass]);
-
             return $defaultClass;
         } catch (\Exception $e) {
             Log::error('Failed to get default class from database', [
                 'error' => $e->getMessage()
             ]);
-
             return 'Kelas Umum'; // Fallback
         }
     }
 
     /**
      * Get course price dynamically from database
-     *
-     * @return int
      */
     private function getCoursePrice(): int
     {
         try {
-            // Get price from ContentBlock database
             $price = ContentBlock::getNumberValue('course_price', config('course.price', 299000));
-
-            // Ensure price is a valid positive number
             $price = (int) $price;
 
             if ($price <= 0) {
@@ -418,7 +440,6 @@ class PaymentController extends Controller
             }
 
             Log::info('Course price loaded from database', ['price' => $price]);
-
             return $price;
 
         } catch (\Exception $e) {
@@ -426,30 +447,22 @@ class PaymentController extends Controller
                 'error' => $e->getMessage(),
                 'fallback_price' => config('course.price', 299000)
             ]);
-
-            // Fallback to config if database fails
             return (int) config('course.price', 299000);
         }
     }
 
     /**
      * Get course details dynamically from database or config
-     *
-     * @return string
      */
     private function getCourseDetails(): string
     {
         try {
-            // Try to get course name from ContentBlock
             $courseName = ContentBlock::getValue('hero_title', config('course.name', 'Kursus Ujian Perangkat Desa'));
-
             return !empty($courseName) ? $courseName : config('course.name', 'Kursus Ujian Perangkat Desa');
-
         } catch (\Exception $e) {
             Log::error('Failed to get course details from database', [
                 'error' => $e->getMessage()
             ]);
-
             return config('course.name', 'Kursus Ujian Perangkat Desa');
         }
     }
@@ -463,7 +476,7 @@ class PaymentController extends Controller
             $transaction = Transaction::where('invoice_id', $invoiceId)->first();
         }
 
-     	$content = [
+        $content = [
             'contact_email' => ContentBlock::getValue('contact_email', 'support@example.com'),
             'contact_phone' => ContentBlock::getValue('contact_phone', '+62 812-3456-7890'),
         ];
@@ -623,13 +636,17 @@ class PaymentController extends Controller
                 'payment_status' => 'paid',
                 'paid_at' => now(),
             ]);
+
+            // ✅ Create user after payment confirmed
+            $this->createUserAfterPayment($transaction);
+
             $this->sendPaymentConfirmation($transaction);
+            $this->triggerApiIntegration($transaction);
         } elseif ($statusCode === '02') {
             $transaction->update(['payment_status' => 'failed']);
         }
     }
 
-    // Keep existing Duitku methods
     private function fetchDuitkuPaymentMethods(int $amount): ?array
     {
         $merchantCode = config('services.duitku.merchant_code');
