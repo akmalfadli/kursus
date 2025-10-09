@@ -67,13 +67,26 @@ class ViewUser extends ViewRecord
                             ->getStateUsing(fn ($record) => $record->transactions()->latest()->first()?->created_at?->format('d/m/Y H:i') ?? 'Belum ada'),
                     ])->columns(3),
 
+                Infolists\Components\Section::make('Riwayat API Integration')
+                    ->schema([
+                        Infolists\Components\View::make('filament.components.api-integration-history')
+                            ->viewData([
+                                'notes' => fn ($record) => $record->notes
+                            ])
+                    ])
+                    ->visible(fn ($record) => !empty($record->notes) && str_contains($record->notes, 'API Integration'))
+                    ->collapsible(),
+
                 Infolists\Components\Section::make('Catatan')
                     ->schema([
                         Infolists\Components\TextEntry::make('notes')
                             ->label('Catatan')
-                            ->placeholder('Tidak ada catatan'),
+                            ->placeholder('Tidak ada catatan')
+                            ->markdown()
+                            ->columnSpanFull(),
                     ])
-                    ->visible(fn ($record) => !empty($record->notes)),
+                    ->visible(fn ($record) => !empty($record->notes))
+                    ->collapsible(),
             ]);
     }
 }

@@ -7,7 +7,7 @@
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
     <!-- Floating Alert Bar -->
-    <div class="bg-gradient-to-r from-orange-600 to-red-600 text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-50 shadow-lg">
+    <div class="bg-gradient-to-r from-orange-400 to-orange-700 text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-50 shadow-lg">
         🎉 <span class="font-bold">Promo Terbatas!</span> Daftar sekarang dan dapatkan akses seumur hidup + bonus eksklusif
     </div>
 
@@ -27,16 +27,16 @@
                             <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 border-2 border-white"></div>
                         </div>
                         <span class="text-sm font-medium text-slate-700">
-                            <span class="text-orange-600 font-bold">Pemateri</span> Berpengalaman
+                            <span class="text-orange-500 font-bold">Pemateri</span> Berpengalaman
                         </span>
                     </div>
 
                     <h1 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-4 leading-tight">
-                        Lolos Ujian <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">Perangkat Desa</span> Dengan Mudah
+                        Lolos Ujian <span class="text-transparent bg-clip-text bg-gradient-to-r  from-orange-400 to-orange-500">Perangkat Desa</span> Dengan Mudah
                     </h1>
 
                     <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                        Persiapan lengkap dengan <strong>soal latihan</strong>, video pembelajaran, dan mentoring langsung. Tingkatkan peluang Anda hingga <span class="text-orange-600 font-bold">95%</span>!
+                        Persiapan lengkap dengan <strong>soal latihan</strong>, materi pembelajaran, dan mentoring langsung melalui zoom meeting. Tingkatkan peluang Anda hingga <span class="text-orange-600 font-bold">95%</span>!
                     </p>
 
                     <!-- Key Stats -->
@@ -58,7 +58,7 @@
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-3 mb-6">
                         <button onclick="scrollToSection('pricing')"
-                                class="flex-1 sm:flex-none bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+                                class="flex-1 sm:flex-none bg-gradient-to-r  from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
                             🎯 Daftar Sekarang
                         </button>
                         <button onclick="scrollToSection('benefits')"
@@ -128,14 +128,16 @@
                 <p class="text-slate-600">Semua yang Anda butuhkan untuk sukses dalam satu platform</p>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($content['benefits'] as $index => $benefit)
                 <div class="group bg-gradient-to-br from-white to-orange-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-orange-100">
-                    <div class="w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <span class="text-3xl">{{ $benefit['icon'] }}</span>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <span class="text-2xl">{{ $benefit['icon'] }}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">{{ $benefit['title'] }}</h3>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">{{ $benefit['title'] }}</h3>
-                    <p class="text-sm text-slate-600">{{ $benefit['description'] }}</p>
+                    <p class="text-sm text-slate-600 leading-relaxed">{{ $benefit['description'] }}</p>
                 </div>
                 @endforeach
             </div>
@@ -236,7 +238,7 @@
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span class="text-slate-700">Sertifikat <strong>Resmi</strong></span>
+                            <span class="text-slate-700">Akses Materi <strong>24/7</strong></span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -336,7 +338,7 @@
     <!-- Payment Method Modal -->
     <div id="payment-method-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
-            <div class="sticky top-0 p-6 border-b bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-2xl">
+            <div class="sticky top-0 p-6 border-b bg-gradient-to-r from-orange-300 to-orange-500 text-white rounded-t-2xl">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-2xl font-bold">Pilih Metode Pembayaran</h3>
@@ -360,7 +362,7 @@
                     <div class="space-y-3" id="payment-methods-list"></div>
 
                     <button id="proceed-payment-btn"
-                            class="w-full mt-6 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="w-full mt-6 bg-gradient-to-r  from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled>
                         <span id="proceed-text">Pilih Metode Pembayaran</span>
                         <span id="proceed-loading" class="hidden">Memproses...</span>
@@ -369,7 +371,7 @@
 
                 <div id="payment-methods-error" class="hidden text-center py-12">
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                         </svg>
                     </div>
@@ -387,7 +389,7 @@
     <div id="promo-popup" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 animate-fadeIn">
         <div class="bg-white max-w-2xl w-full max-h-[90vh] rounded-3xl shadow-2xl overflow-y-auto transform animate-slideUp">
             <!-- Header with Close Button -->
-            <div class="relative bg-gradient-to-r from-orange-600 to-red-600 text-white p-2 text-center sticky top-0 z-10">
+            <div class="relative bg-gradient-to-r  from-orange-600 to-red-600 text-white p-2 text-center sticky top-0 z-10">
             <button id="close-promo-popup" class="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -401,12 +403,12 @@
             <div class="p-4">
                 <!-- Discount Section -->
                 <div class="text-center mb-3">
-                    <div class="inline-block bg-red-100 border-2 border-red-500 rounded-xl px-3 py-3 mb-2">
-                        <div class="text-red-600 font-bold text-md mb-1">❗ KURSUS {{ strtoupper($content['default_class']) }} SEGERA DIMULAI ❗</div>
-                        <div class="text-red-600 font-bold text-md mb-1">DISKON 60%</div>
+                    <div class="inline-block bg-red-100 border-2 border-orange-500 rounded-xl px-3 py-3 mb-2">
+                        <div class="text-orange-600 font-bold text-md mb-1">❗ KURSUS {{ strtoupper($content['default_class']) }} SEGERA DIMULAI ❗</div>
+                        <div class="text-orange-600 font-bold text-md mb-1">DISKON 60%</div>
                         <div class="flex items-center justify-center gap-3">
                             <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
-                            <span class="text-2xl font-bold text-red-600">Rp {{ number_format($content['price'], 0, ',', '.') }}</span>
+                            <span class="text-2xl font-bold text-orange-600">Rp {{ number_format($content['price'], 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -446,6 +448,14 @@
                                 </svg>
                             </div>
                             <span class="text-slate-700"><strong>Pengetahuan Umum Tentang Desa</strong> - Komprehensif dan terkini</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <span class="text-slate-700"><strong> Kepemerintahan, Administrasi Perkantoran</strong> dan Kepemimpinan</span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">

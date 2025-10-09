@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Models\Transaction;
+use App\Models\ContentBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,6 +19,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
@@ -259,6 +261,163 @@ class UserResource extends Resource
                                 ->send();
                         }
                     }),
+
+                Action::make('trigger_api_integration')
+                    ->label('Kirim ke API')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Kirim Data ke API External')
+                    ->modalDescription(fn (User $record) => "Apakah Anda yakin ingin mengirim data {$record->name} ke API external? Password baru akan digenerate dan dikirim ke email.")
+                    ->modalSubmitActionLabel('Ya, Kirim ke API')
+                    ->action(function (User $record) {
+                        try {
+                            // Check if API integration is enabled
+                            $apiEnabled = ContentBlock::getBooleanValue('api_enabled', false);
+
+                            if (!$apiEnabled) {
+                                Notification::make()
+                                    ->title('API Integration Tidak Aktif')
+                                    ->body('Silakan aktifkan API Integration di menu Pengaturan terlebih dahulu.')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            // Get API settings
+                            $apiUrl = ContentBlock::getValue('api_trigger_url');
+                            $bearerToken = ContentBlock::getValue('api_bearer_token');
+
+                            if (empty($apiUrl) || empty($bearerToken)) {
+                                Notification::make()
+                                    ->title('Konfigurasi API Tidak Lengkap')
+                                    ->body('Silakan lengkapi URL dan Bearer Token di menu Pengaturan.')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            // Generate temporary password
+                            $tempPassword = Str::random(12);
+
+                            // Update user password
+                            $record->update([
+                                'password' => Hash::make($tempPassword)
+                            ]);
+
+                            // Ensure user has a class
+                            if (empty($record->class)) {
+                                $defaultClass = ContentBlock::getValue('default_class', 'Kelas Umum');
+                                $record->update(['class' => $defaultClass]);
+                                $record->refresh();
+                            }
+
+                            // Prepare API payload
+                            $payload = [
+                                'adminEmail' => 'akmalfadli94@gmail.com',
+                                'adminPassword' => 'pAdli3',
+                                'email' => $record->email,
+                                'password' => $tempPassword,
+                                'name' => $record->name,
+                                'class' => $record->class
+                            ];
+
+                            Log::info('Manual API Integration triggered', [
+                                'user_id' => $record->id,
+                                'email' => $record->email,
+                                'url' => $apiUrl
+                            ]);
+
+                            // Send API request
+                            $response = Http::timeout(30)
+                                ->withHeaders([
+                                    'Authorization' => 'Bearer ' . $bearerToken,
+                                    'Content-Type' => 'application/json',
+                                    'Accept' => 'application/json',
+                                ])
+                                ->post($apiUrl, $payload);
+
+                            // Log response
+                            $statusCode = $response->status();
+                            $responseData = $response->json();
+
+                            Log::info('API Integration Response', [
+                                'user_id' => $record->id,
+                                'status_code' => $statusCode,
+                                'response' => $responseData
+                            ]);
+
+                            if ($response->successful()) {
+                                // Send email with credentials to user
+                                Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+
+                                // Show success notification with response details
+                                $message = 'Data berhasil dikirim ke API!';
+
+                                if (isset($responseData['message'])) {
+                                    $message .= "\n\nResponse: " . $responseData['message'];
+                                }
+
+                                if (isset($responseData['userId'])) {
+                                    $message .= "\nUser ID: " . $responseData['userId'];
+                                }
+
+                                Notification::make()
+                                    ->title('✅ API Integration Berhasil')
+                                    ->body($message)
+                                    ->success()
+                                    ->duration(10000)
+                                    ->send();
+
+                                // Update user notes with API response
+                                $apiInfo = "API Integration: " . now()->format('Y-m-d H:i:s') . "\n";
+                                $apiInfo .= "Status: Success ({$statusCode})\n";
+                                $apiInfo .= "Response: " . json_encode($responseData, JSON_PRETTY_PRINT);
+
+                                $record->update([
+                                    'notes' => ($record->notes ? $record->notes . "\n\n" : '') . $apiInfo
+                                ]);
+
+                            } else {
+                                // API request failed
+                                $errorMessage = 'API request failed';
+
+                                if (isset($responseData['message'])) {
+                                    $errorMessage .= ': ' . $responseData['message'];
+                                } elseif (isset($responseData['error'])) {
+                                    $errorMessage .= ': ' . $responseData['error'];
+                                }
+
+                                Log::error('API Integration failed', [
+                                    'user_id' => $record->id,
+                                    'status_code' => $statusCode,
+                                    'response' => $response->body()
+                                ]);
+
+                                Notification::make()
+                                    ->title('❌ API Integration Gagal')
+                                    ->body($errorMessage . " (Status: {$statusCode})")
+                                    ->danger()
+                                    ->duration(10000)
+                                    ->send();
+                            }
+
+                        } catch (\Exception $e) {
+                            Log::error('API Integration error', [
+                                'user_id' => $record->id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+
+                            Notification::make()
+                                ->title('❌ Terjadi Kesalahan')
+                                ->body('Error: ' . $e->getMessage())
+                                ->danger()
+                                ->duration(10000)
+                                ->send();
+                        }
+                    })
+                    ->visible(fn (User $record) => $record->role === 'customer'),
 
                 Action::make('reset_password')
                     ->label('Reset Password')
