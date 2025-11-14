@@ -32,9 +32,14 @@ Route::prefix('payment')->name('payment.')->group(function () {
     Route::post('/initiate', [PaymentController::class, 'initiate'])->name('initiate');
 
     // Callback and status routes
-    Route::post('/callback', [PaymentController::class, 'callback'])->name('callback');
+    // Route::post('/callback', [PaymentController::class, 'callback'])->name('callback');
     Route::post('/status', [PaymentController::class, 'checkStatus'])->name('status');
 });
+
+// In routes/web.php
+Route::post('/payment/callback', [PaymentController::class, 'callback'])
+    ->name('payment.callback')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]); // Alternative to middleware exemption
 
 // Thank you and other pages
 Route::get('/thank-you', [PaymentController::class, 'thankYou'])->name('thank-you');

@@ -511,7 +511,7 @@
             </div>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/62{{ preg_replace('/[^0-9]/', '', $content['contact_phone']) }}?text=Halo%2C%20saya%20tertarik%20dengan%20kursus%20{{ urlencode($content['course_name']) }}"
+    <a href="https://wa.me/62{{ preg_replace('/[^0-9]/', '', $content['contact_phone']) }}?text=Halo%2C%20saya%20tertarik%20dengan%20kursus%20{{ urlencode($content['course_name']) }}.%0ANama%20%3A%20%0AAlamat%20%3A%20"
        target="_blank"
        rel="noopener noreferrer"
        class="fixed bottom-12 right-12 z-50 group"

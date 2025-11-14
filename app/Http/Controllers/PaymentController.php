@@ -151,62 +151,156 @@ class PaymentController extends Controller
 
     public function callback(Request $request)
     {
-        Log::info('Duitku callback received', $request->all());
+        // Log ALL incoming data for debugging
+        Log::info('Duitku callback received', [
+            'headers' => $request->headers->all(),
+            'body' => $request->all(),
+            'ip' => $request->ip(),
+            'method' => $request->method(),
+        ]);
 
         try {
+            // Verify signature FIRST before any processing
             if (!$this->verifyDuitkuCallback($request->all())) {
-                Log::warning('Invalid callback signature', $request->all());
-                return response('Invalid signature', 400);
+                Log::warning('Invalid callback signature', [
+                    'data' => $request->all(),
+                    'expected_signature' => $this->calculateExpectedSignature($request->all())
+                ]);
+                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 400);
             }
 
-            $merchantOrderId = $request->merchantOrderId;
-            $resultCode = $request->resultCode;
+            // Extract and validate required fields
+            $merchantOrderId = $request->input('merchantOrderId');
+            $resultCode = $request->input('resultCode');
 
+            if (empty($merchantOrderId) || empty($resultCode)) {
+                Log::error('Missing required callback fields', $request->all());
+                return response()->json(['status' => 'error', 'message' => 'Missing required fields'], 400);
+            }
+
+            // Find transaction
             $transaction = Transaction::where('invoice_id', $merchantOrderId)->first();
 
             if (!$transaction) {
-                Log::warning('Transaction not found', ['invoice_id' => $merchantOrderId]);
-                return response('Transaction not found', 404);
+                Log::warning('Transaction not found in callback', [
+                    'invoice_id' => $merchantOrderId,
+                    'all_data' => $request->all()
+                ]);
+                return response()->json(['status' => 'error', 'message' => 'Transaction not found'], 404);
             }
 
+            // Prevent duplicate processing
+            if ($transaction->payment_status === 'paid') {
+                Log::info('Transaction already paid, skipping duplicate callback', [
+                    'invoice_id' => $merchantOrderId,
+                    'paid_at' => $transaction->paid_at
+                ]);
+                return response()->json(['status' => 'success', 'message' => 'Already processed'], 200);
+            }
+
+            // Process based on result code
             if ($resultCode === '00') {
-                // Update transaction status
+                // Payment SUCCESS
                 $transaction->update([
                     'payment_status' => 'paid',
-                    'payment_method' => $request->paymentCode ?? $transaction->payment_method,
-                    'payment_reference' => $request->reference ?? null,
+                    'payment_method' => $request->input('paymentCode', $transaction->payment_method),
+                    'payment_reference' => $request->input('reference'),
                     'paid_at' => now(),
+                    'duitku_response' => array_merge(
+                        $transaction->duitku_response ?? [],
+                        ['callback_received_at' => now()->toISOString()]
+                    )
                 ]);
 
-                Log::info('Payment successful', ['invoice_id' => $merchantOrderId]);
+                Log::info('Payment successful - Starting post-payment processing', [
+                    'invoice_id' => $merchantOrderId,
+                    'reference' => $request->input('reference')
+                ]);
 
-                // ✅ CHANGED: Create user ONLY after payment success
-                $this->createUserAfterPayment($transaction);
+                // Create user after payment
+                try {
+                    $this->createUserAfterPayment($transaction);
+                } catch (\Exception $e) {
+                    Log::error('User creation failed but payment succeeded', [
+                        'invoice_id' => $merchantOrderId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
 
-                // Send notifications
-                $this->sendPaymentConfirmation($transaction);
-                $this->notifyAdminPaymentSuccess($transaction);
+                // Send notifications (non-blocking)
+                try {
+                    $this->sendPaymentConfirmation($transaction);
+                    $this->notifyAdminPaymentSuccess($transaction);
+                } catch (\Exception $e) {
+                    Log::error('Notification failed but payment succeeded', [
+                        'invoice_id' => $merchantOrderId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
 
-                // TRIGGER API INTEGRATION
-                $this->triggerApiIntegration($transaction);
+                // Trigger API integration (non-blocking)
+                try {
+                    $this->triggerApiIntegration($transaction);
+                } catch (\Exception $e) {
+                    Log::error('API integration failed but payment succeeded', [
+                        'invoice_id' => $merchantOrderId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                return response()->json(['status' => 'success'], 200);
 
             } elseif ($resultCode === '01') {
+                // Payment PENDING
                 $transaction->update(['payment_status' => 'pending']);
                 Log::info('Payment pending', ['invoice_id' => $merchantOrderId]);
+                return response()->json(['status' => 'success', 'message' => 'Pending'], 200);
+
             } else {
-                $transaction->update(['payment_status' => 'failed']);
-                Log::info('Payment failed', ['invoice_id' => $merchantOrderId, 'result_code' => $resultCode]);
+                // Payment FAILED
+                $transaction->update([
+                    'payment_status' => 'failed',
+                    'duitku_response' => array_merge(
+                        $transaction->duitku_response ?? [],
+                        [
+                            'failure_code' => $resultCode,
+                            'failure_time' => now()->toISOString()
+                        ]
+                    )
+                ]);
+                Log::info('Payment failed', [
+                    'invoice_id' => $merchantOrderId,
+                    'result_code' => $resultCode
+                ]);
+                return response()->json(['status' => 'success', 'message' => 'Failed'], 200);
             }
 
-            return response('OK', 200);
-
         } catch (\Exception $e) {
-            Log::error('Callback processing failed', [
+            Log::error('Callback processing exception', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return response('Error processing callback', 500);
+
+            // Still return 200 to prevent Duitku from retrying
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Internal error - will be investigated'
+            ], 200);
         }
+    }
+
+    /**
+     * Helper method to calculate expected signature for debugging
+     */
+    private function calculateExpectedSignature(array $data): string
+    {
+        $merchantCode = config('services.duitku.merchant_code');
+        $apiKey = config('services.duitku.api_key');
+        $merchantOrderId = $data['merchantOrderId'] ?? '';
+        $amount = $data['amount'] ?? '';
+
+        return md5($merchantCode . $amount . $merchantOrderId . $apiKey);
     }
 
     /**
