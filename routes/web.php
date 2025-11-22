@@ -38,8 +38,7 @@ Route::prefix('payment')->name('payment.')->group(function () {
 
 // In routes/web.php
 Route::post('/payment/callback', [PaymentController::class, 'callback'])
-    ->name('payment.callback')
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]); // Alternative to middleware exemption
+    ->name('payment.callback');
 
 // Thank you and other pages
 Route::get('/thank-you', [PaymentController::class, 'thankYou'])->name('thank-you');
