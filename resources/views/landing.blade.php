@@ -42,7 +42,7 @@
                     <!-- Key Stats -->
                     <div class="grid grid-cols-3 gap-4 mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-orange-100">
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-orange-600">100+</div>
+                            <div class="text-3xl font-bold text-orange-600">500+</div>
                             <div class="text-xs text-slate-600">Soal Latihan</div>
                         </div>
                         <div class="text-center border-x border-slate-200">
@@ -211,7 +211,7 @@
                         <div class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 mb-2">
                             Rp {{ number_format($content['price'], 0, ',', '.') }}
                         </div>
-                        <div class="text-slate-600 font-medium">Pembayaran Sekali - Akses Selamanya</div>
+                        <div class="text-slate-600 font-medium">Pembayaran Sekali - Akses 1 Tahun</div>
                     </div>
 
                     <!-- Features -->
@@ -222,7 +222,7 @@
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                             </div>
-                            <span class="text-slate-700"><strong>100+</strong> Soal Latihan Premium</span>
+                            <span class="text-slate-700"><strong>500+</strong> Soal Latihan Premium</span>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -277,7 +277,7 @@
                                 class="w-full px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors"
                                 maxlength="255">
                         </div>
-                        <input type="tel" name="phone" placeholder="Nomor WhatsApp (Opsional)"
+                        <input type="tel" name="phone" placeholder="Nomor WhatsApp"
                             class="w-full px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors"
                             pattern="^(\+62|62|0)[0-9]{8,13}$">
 
@@ -705,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const clientHeight = document.documentElement.clientHeight;
 
         // Check if user scrolled to bottom (with 100px threshold)
-        if (scrollTop + clientHeight >= scrollHeight - 100) {
+        if (scrollTop + clientHeight >= scrollHeight - 800) {
             showPromoPopup();
             promoShown = true;
         }
