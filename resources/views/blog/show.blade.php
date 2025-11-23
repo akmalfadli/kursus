@@ -4,40 +4,10 @@
 @section('description', Str::limit(strip_tags($post->content), 150))
 @section('og_image', $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'))
 
-@push('scripts')
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "{{ url()->current() }}"
-  },
-  "headline": "{{ $post->title }}",
-  "description": "{{ Str::limit(strip_tags($post->content), 150) }}",
-  "image": "{{ $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png') }}",  
-  "author": {
-    "@type": "Person",
-    "name": "{{ $post->user ? $post->user->name : 'Admin Digidesa' }}"
-  },  
-  "publisher": {
-    "@type": "Organization",
-    "name": "{{ config('app.name') }}",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "{{ asset('images/logo.png') }}"
-    }
-  },
-  "datePublished": "{{ $post->published_at ? $post->published_at->toIso8601String() : $post->created_at->toIso8601String() }}",
-  "dateModified": "{{ $post->updated_at->toIso8601String() }}"
-}
-</script>
-@endpush
-
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
     
-    <!-- Header/Nav (Simple back button) -->
+    <!-- Header/Nav -->
     <nav class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-40 border-b border-slate-200">
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <a href="{{ route('landing') }}" class="flex items-center gap-2 text-slate-600 hover:text-orange-600 font-bold transition-colors">
@@ -52,10 +22,10 @@
         </div>
     </nav>
 
-    <!-- Article Content -->
+    <!-- Main Content Grid -->
     <div class="max-w-7xl mx-auto px-4 py-12 grid lg:grid-cols-12 gap-12">
         
-        <!-- Sidebar Left (Optional: Share/TOC) -->
+        <!-- Left Sidebar -->
         <aside class="hidden lg:block lg:col-span-2 space-y-8 sticky top-32 h-fit">
             <div class="text-center">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Bagikan</p>
@@ -66,14 +36,6 @@
                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"
                        title="Bagikan ke Facebook">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    </a>
-                    
-                    <!-- Twitter / X -->
-                    <a href="https://twitter.com/intent/tweet?text={{ urlencode($post->title) }}&url={{ urlencode(url()->current()) }}" 
-                       target="_blank"
-                       class="w-10 h-10 rounded-full bg-slate-100 hover:bg-black hover:text-white flex items-center justify-center transition-colors"
-                       title="Bagikan ke Twitter">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     </a>
                     
                     <!-- WhatsApp -->
@@ -87,59 +49,32 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- Article -->
         <article class="col-span-12 lg:col-span-7">
-            <!-- Title & Meta -->
             <header class="mb-8 text-center lg:text-left">
-                <div class="mb-4">
-                    <span class="inline-block bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                        {{ $post->category->name }}
-                    </span>
-                </div>
                 <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
                     {{ $post->title }}
                 </h1>
                 <div class="flex items-center justify-center lg:justify-start gap-6 text-slate-500 text-sm border-b border-slate-100 pb-8">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 bg-slate-200 rounded-full overflow-hidden">
-                            <img src="https://ui-avatars.com/api/?name={{ $post->user ? urlencode($post->user->name) : 'Admin' }}&background=random" alt="Author" class="w-full h-full">
-                        </div>
-                        <span class="font-medium text-slate-700">{{ $post->user ? $post->user->name : 'Admin Digidesa' }}</span>
-                    </div>
-                    <span class="flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        {{ $post->published_at ? $post->published_at->format('d F Y') : $post->created_at->format('d F Y') }}
-                    </span>
-                    <span class="flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                        {{ number_format($post->views) }} views
-                    </span>
+                    <span class="font-medium text-slate-700">{{ $post->user ? $post->user->name : 'Admin' }}</span>
+                    <span>{{ $post->created_at->format('d F Y') }}</span>
+                    <span>{{ number_format($post->views) }} views</span>
                 </div>
             </header>
 
-            <!-- Featured Image -->
             @if($post->image)
             <div class="rounded-2xl overflow-hidden shadow-lg mb-10">
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($post->image) }}" 
-                     alt="{{ $post->title }}" 
-                     class="w-full h-auto object-cover">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($post->image) }}" alt="{{ $post->title }}" class="w-full h-auto object-cover">
             </div>
             @endif
 
-            <!-- Content Body -->
             <div class="prose prose-lg prose-slate max-w-none bg-white p-0">
                 {!! $post->content !!}
             </div>
         </article>
 
-        <!-- Sidebar Right (CTA & Related) -->
+        <!-- Right Sidebar -->
         <aside class="hidden lg:block lg:col-span-3 space-y-8">
-            <!-- Sticky Container -->
             <div class="sticky top-32 space-y-6">
                 <!-- Mini CTA -->
                 <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-xl">
@@ -150,7 +85,6 @@
                     </a>
                 </div>
 
-                <!-- Related/Latest Posts -->
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
                     <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Artikel Lainnya</h3>
                     <div class="space-y-4">
@@ -158,12 +92,11 @@
                         <a href="{{ route('blog.show', $related->slug) }}" class="flex gap-3 group">
                             <div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
                                 @if($related->image)
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($related->image) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($related->image) }}" class="w-full h-full object-cover">
                                 @endif
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold text-slate-700 group-hover:text-orange-600 line-clamp-2 transition-colors">{{ $related->title }}</h4>
-                                <span class="text-xs text-slate-400">{{ $related->created_at->format('d M Y') }}</span>
+                                <h4 class="text-sm font-bold text-slate-700 line-clamp-2">{{ $related->title }}</h4>
                             </div>
                         </a>
                         @endforeach
@@ -190,7 +123,4 @@
 
     @include('landing.footer')
 </div>
-
-@include('landing.floating-elements')
-@include('landing.analytics')
 @endsection
