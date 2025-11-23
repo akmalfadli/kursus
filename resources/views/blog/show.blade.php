@@ -75,8 +75,8 @@
         </article>
 
         <!-- Right Sidebar -->
-        <aside class="col-span-1 lg:col-span-3 order-2 lg:order-3 space-y-4 md:space-y-6 lg:space-y-8">
-            <div class="sticky top-24 lg:top-24 h-fit z-30 lg:space-y-6 space-y-4">
+        <aside class="col-span-1 lg:col-span-3 order-2 lg:order-3 space-y-4 md:space-y-6 lg:space-y-8 h-full">
+            <div class="sticky top-32 lg:top-32 h-fit z-30 lg:space-y-6 space-y-4">
                 <!-- Mini CTA -->
                 <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-lg md:rounded-2xl p-4 md:p-6 shadow-xl">
                     <h3 class="font-bold text-lg md:text-xl mb-2">Lulus Ujian Tahun Ini?</h3>
