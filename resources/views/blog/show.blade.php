@@ -4,6 +4,36 @@
 @section('description', Str::limit(strip_tags($post->content), 150))
 @section('og_image', $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'))
 
+@push('scripts')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ url()->current() }}"
+  },
+  "headline": "{{ $post->title }}",
+  "description": "{{ Str::limit(strip_tags($post->content), 150) }}",
+  "image": "{{ $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png') }}",  
+  "author": {
+    "@type": "Person",
+    "name": "{{ $post->user ? $post->user->name : 'Admin Digidesa' }}"
+  },  
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config('app.name') }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ asset('images/logo.png') }}"
+    }
+  },
+  "datePublished": "{{ $post->published_at ? $post->published_at->toIso8601String() : $post->created_at->toIso8601String() }}",
+  "dateModified": "{{ $post->updated_at->toIso8601String() }}"
+}
+</script>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
     
