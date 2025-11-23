@@ -27,8 +27,8 @@
     <div class="max-w-7xl mx-auto px-4 py-6 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
 
         <!-- Left Sidebar - Mobile Horizontal, Desktop Vertical -->
-        <aside class="lg:col-span-2 order-3 lg:order-1">
-            <div class="text-center sticky top-24 h-fit z-30 bg-gradient-to-br from-slate-50 via-white to-blue-50 lg:bg-transparent py-3 lg:py-0 rounded-lg lg:rounded-none shadow-sm lg:shadow-none border-b lg:border-b-0 border-slate-200 lg:border-slate-200">
+        <aside class="lg:col-span-2 order-3 lg:order-1 h-full">
+            <div class="sticky top-32 z-30 text-center h-fit bg-gradient-to-br from-slate-50 via-white to-blue-50 lg:bg-transparent py-3 lg:py-0 rounded-lg lg:rounded-none shadow-sm lg:shadow-none border-b lg:border-b-0 border-slate-200 lg:border-slate-200">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 lg:mb-4">Bagikan</p>
                 <div class="flex flex-row lg:flex-col gap-3 justify-center lg:items-center">
                     <!-- Facebook -->
