@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\ContentBlock;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class LandingPageController extends Controller
@@ -31,12 +32,22 @@ class LandingPageController extends Controller
             'success_rate' => '98%', // You can calculate this based on your data
         ];
 
+        $latestPosts = Post::where('is_published', true)
+            // ->where(function ($query) {
+            //     $query->whereNull('published_at')
+            //           ->orWhere('published_at', '<=', now());
+            // })
+            ->with('category')
+            ->latest('created_at')
+            ->take(3)
+            ->get();
+
         // Check if site is in maintenance mode
         if (ContentBlock::getBooleanValue('site_maintenance', false)) {
             return view('maintenance', compact('content'));
         }
 
-        return view('landing', compact('content'));
+        return view('landing', compact('content', 'latestPosts'));
     }
 
     private function getDefaultBenefits(): array

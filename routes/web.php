@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 // Landing page
 Route::get('/', [LandingPageController::class, 'index'])->name('landing');
+
+// Blog
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Legal pages
 Route::get('/privacy-policy', function () {
@@ -59,4 +63,5 @@ Route::get('/health', function () {
 // API routes for AJAX calls
 Route::prefix('api')->name('api.')->group(function () {
     Route::post('/transaction/status', [PaymentController::class, 'checkStatus'])->name('transaction.status');
+    Route::post('/analytics/track', [App\Http\Controllers\Api\AnalyticsController::class, 'track'])->name('analytics.track');
 });

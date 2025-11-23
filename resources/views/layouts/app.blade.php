@@ -37,7 +37,7 @@
 
 
     <!-- Tailwind CSS CDN (Quick Setup) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
     <script>
         tailwind.config = {
             theme: {
