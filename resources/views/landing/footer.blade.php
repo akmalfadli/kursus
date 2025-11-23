@@ -1,4 +1,4 @@
-<footer class="py-8 px-4 bg-slate-900 text-white">
+<footer class="py-8 px-4 bg-slate-900 text-white pb-32 lg:pb-8">
     <div class="max-w-6xl mx-auto">
         <div class="grid md:grid-cols-3 gap-8 mb-6">
             <div>
