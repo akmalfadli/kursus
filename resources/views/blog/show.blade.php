@@ -72,9 +72,9 @@
                 <div class="flex items-center justify-center lg:justify-start gap-6 text-slate-500 text-sm border-b border-slate-100 pb-8">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 bg-slate-200 rounded-full overflow-hidden">
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Author" class="w-full h-full">
+                            <img src="https://ui-avatars.com/api/?name={{ $post->user ? urlencode($post->user->name) : 'Admin' }}&background=random" alt="Author" class="w-full h-full">
                         </div>
-                        <span class="font-medium text-slate-700">Admin Digidesa</span>
+                        <span class="font-medium text-slate-700">{{ $post->user ? $post->user->name : 'Admin Digidesa' }}</span>
                     </div>
                     <span class="flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

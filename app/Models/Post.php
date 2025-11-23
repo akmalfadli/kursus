@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Post extends Model
 {
     protected $fillable = [
+        'user_id',
         'category_id',
         'title',
         'slug',
@@ -22,6 +23,11 @@ class Post extends Model
         'is_published' => 'boolean',
         'published_at' => 'datetime',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function category(): BelongsTo
     {

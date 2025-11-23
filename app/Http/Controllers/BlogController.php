@@ -11,6 +11,7 @@ class BlogController extends Controller
     public function show($slug)
     {
         $post = Post::where('slug', $slug)
+            ->with('user', 'category')
             ->where('is_published', true)
             // ->where(function ($query) {
             //     $query->whereNull('published_at')

@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class PostResource extends Resource
 {
@@ -23,6 +24,9 @@ class PostResource extends Resource
             ->schema([
                 Forms\Components\Section::make()
                     ->schema([
+                        Forms\Components\Hidden::make('user_id')
+                            ->default(fn () => Auth::id())
+                            ->required(),
                         Forms\Components\TextInput::make('title')
                             ->required()
                             ->live(onBlur: true)
@@ -63,6 +67,10 @@ class PostResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->limit(50),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Author')
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
                     ->sortable()
                     ->searchable(),
