@@ -36,20 +36,8 @@
     <meta name="twitter:image" content="https://digidesa.id/images/graduation.png">
 
 
-    <!-- Tailwind CSS CDN (Quick Setup) -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1e40af',
-                        secondary: '#f59e0b',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Additional styles -->
     @stack('styles')
