@@ -28,8 +28,8 @@
 
         <!-- Left Sidebar - Mobile Horizontal, Desktop Vertical -->
         <aside class="lg:col-span-2 order-3 lg:order-1">
-            <div class="text-center fixed bottom-0 left-0 w-full lg:w-auto lg:sticky lg:top-24 h-fit z-50 lg:z-30 bg-gradient-to-br from-slate-50 via-white to-blue-50 lg:bg-transparent py-3 lg:py-0 rounded-t-2xl lg:rounded-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none border-t lg:border-t-0 border-slate-200">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0 lg:mb-4 hidden lg:block">Bagikan</p>
+            <div class="text-center sticky top-24 h-fit z-30 bg-gradient-to-br from-slate-50 via-white to-blue-50 lg:bg-transparent py-3 lg:py-0 rounded-lg lg:rounded-none shadow-sm lg:shadow-none border-b lg:border-b-0 border-slate-200 lg:border-slate-200">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 lg:mb-4">Bagikan</p>
                 <div class="flex flex-row lg:flex-col gap-3 justify-center lg:items-center">
                     <!-- Facebook -->
                     <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
