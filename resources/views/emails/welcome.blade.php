@@ -74,7 +74,7 @@
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="{{ config('app.url') }}/admin/login"
+                                        <a href="{{ config('app.course_platform_url') }}"
                                            style="display: inline-block; padding: 14px 40px; background-color: #2c5282; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 15px; letter-spacing: 0.3px;">
                                             Masuk ke Akun Saya
                                         </a>
@@ -129,7 +129,7 @@
                                 Email: <a href="mailto:{{ config('mail.from.address') }}" style="color: #2c5282; text-decoration: none;">{{ config('mail.from.address') }}</a>
                             </p>
                             <p style="margin: 0 0 20px; color: #4a5568; font-size: 14px;">
-                                WhatsApp: <a href="https://wa.me/6285707137300" style="color: #2c5282; text-decoration: none;">+62 857-0713-7300</a>
+                                WhatsApp: <a href="https://wa.me/62085774397927" style="color: #2c5282; text-decoration: none;">+62 8577-4397-927</a>
                             </p>
                             <p style="margin: 20px 0 0; color: #718096; font-size: 12px; line-height: 1.5;">
                                 © {{ date('Y') }} Digidesa - Kursus Perangkat Desa. <br>

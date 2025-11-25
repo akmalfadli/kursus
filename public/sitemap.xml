@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+    xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
+    xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
     <url>
-    <loc>http://localhost</loc>
-            </url>
+        <loc>https://digidesa.id</loc>
+    </url>
     <url>
-    <loc>http://localhost/privacy-policy</loc>
-            </url>
+        <loc>https://digidesa.id/privacy-policy</loc>
+    </url>
     <url>
-    <loc>http://localhost/terms-of-service</loc>
-            </url>
+        <loc>https://digidesa.id/terms-of-service</loc>
+    </url>
+    <url>
+        <loc>https://digidesa.id/blog/desa-jantung-bangsa-yang-berdenyut-penuh-potensi-mengapa-kita-perlu-lebih-peduli</loc>
+    </url>
+    <url>
+        <loc>https://digidesa.id/blog/memahami-hierarki-hukum-desa-beda-peraturan-desa-peraturan-kepala-desa-dan-keputusan-kepala-desa</loc>
+    </url>
+    <url>
+        <loc>https://digidesa.id/blog/sejuta-kisah-di-balik-senja-desa-suara-hati-yang-merindukan-tangan-kita</loc>
+    </url>
+    <url>
+        <loc>https://digidesa.id/blog/soal-ujian-perangkat-desa-pasti-keluar-perangkat-desa-terdiri-dari-apa-saja</loc>
+    </url>
 </urlset>

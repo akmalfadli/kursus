@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'course_platform_url' => env('APP_COURSE_PLATFORM_URL', 'https://digidesa.id'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

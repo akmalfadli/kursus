@@ -648,7 +648,7 @@ class PaymentController extends Controller
     private function notifyAdminPaymentSuccess(Transaction $transaction): void
     {
         try {
-            $adminEmail = config('mail.admin_email', 'admin@kursusperangkatdesa.com');
+            $adminEmail = config('mail.admin_email', 'teknologiperwira@gmail.com');
             Log::info('Payment success notification should be sent to admin', ['invoice_id' => $transaction->invoice_id]);
         } catch (\Exception $e) {
             Log::error('Failed to send payment success notification', [
