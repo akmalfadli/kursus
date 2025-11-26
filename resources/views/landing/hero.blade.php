@@ -43,18 +43,20 @@
 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row gap-3 mb-6">
+
                     <button onclick="scrollToSection('pricing')"
-                            class="flex-1 sm:flex-none bg-gradient-to-r  from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+                        class="flex-1 sm:flex-none bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 text-center">
                         🎯 Daftar Sekarang
                     </button>
                     <button onclick="scrollToSection('benefits')"
-                            class="flex-1 sm:flex-none border-2 border-orange-600 text-orange-600 hover:bg-orange-50 px-8 py-4 rounded-xl font-semibold transition-all duration-300">
+                        class="flex-1 sm:flex-none border-2 border-orange-600 text-orange-600 hover:bg-orange-50 px-8 py-4 rounded-xl font-semibold transition-all duration-300 text-center">
                         Lihat Benefit
                     </button>
                     <a href="{{ route('blog.index') }}"
-                       class="flex-1 sm:flex-none border-2 border-orange-500 text-orange-600 hover:bg-orange-10 px-8 py-4 rounded-xl font-semibold transition-all duration-300">
+                    class="flex-1 sm:flex-none border-2 border-orange-500 text-orange-600 hover:bg-orange-10 px-8 py-4 rounded-xl font-semibold transition-all duration-300 text-center">
                         Blog
                     </a>
+
                 </div>
 
                 <!-- Trust Indicators -->
