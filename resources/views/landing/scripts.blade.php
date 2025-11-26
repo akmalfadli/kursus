@@ -25,20 +25,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const promoDaftarBtn = document.getElementById('promo-daftar-btn');
     let promoShown = false;
 
-    // Detect scroll to bottom
+    // Detect scroll halfway down
     window.addEventListener('scroll', function() {
         if (promoShown) return;
 
-        const scrollHeight = document.documentElement.scrollHeight;
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
         const clientHeight = document.documentElement.clientHeight;
+        const scrollHeight = document.documentElement.scrollHeight;
 
-        // Check if user scrolled to bottom (with 100px threshold)
-        if (scrollTop + clientHeight >= scrollHeight - 1100) {
+        const maxScrollable = scrollHeight - clientHeight;
+        const halfwayPoint = (maxScrollable * 0.5) + 300;
+
+        if (scrollTop >= halfwayPoint) {
             showPromoPopup();
             promoShown = true;
         }
     });
+
 
     // Show promo popup
     function showPromoPopup() {
