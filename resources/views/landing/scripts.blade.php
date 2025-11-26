@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const clientHeight = document.documentElement.clientHeight;
 
         // Check if user scrolled to bottom (with 100px threshold)
-        if (scrollTop + clientHeight >= scrollHeight - 800) {
+        if (scrollTop + clientHeight >= scrollHeight - 1100) {
             showPromoPopup();
             promoShown = true;
         }

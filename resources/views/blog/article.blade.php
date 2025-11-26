@@ -10,7 +10,7 @@
     <!-- Header/Nav -->
     <nav class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-40 border-b border-slate-200">
         <div class="max-w-4xl mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
-            <a href="{{ route('landing') }}" class="flex items-center gap-2 text-slate-600 hover:text-orange-600 font-bold transition-colors text-sm md:text-base">
+            <a href="{{ route('blog.index') }}" class="flex items-center gap-2 text-slate-600 hover:text-orange-600 font-bold transition-colors text-sm md:text-base">
                 <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -53,7 +53,7 @@
         <!-- Article -->
         <article class="col-span-1 lg:col-span-7 order-1 lg:order-2">
             <header class="mb-6 md:mb-8 text-center lg:text-left">
-                <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
+                <h1 class="text-2xl sm:text-xl md:text-2xl lg:text-4xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
                     {{ $post->title }}
                 </h1>
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-6 text-slate-500 text-xs sm:text-sm border-b border-slate-100 pb-4 md:pb-8">

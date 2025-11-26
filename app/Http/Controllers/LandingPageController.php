@@ -29,6 +29,8 @@ class LandingPageController extends Controller
             // Stats for social proof
             'total_students' => User::where('role', 'customer')->count(),
             'total_graduates' => Transaction::where('payment_status', 'paid')->count(),
+            'social_instagram' => ContentBlock::getValue('social_instagram', 'https://instagram.com'),
+            'social_facebook' => ContentBlock::getValue('social_facebook', 'https://facebook.com'),
             'success_rate' => '98%', // You can calculate this based on your data
         ];
 

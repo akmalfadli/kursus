@@ -51,6 +51,10 @@
                             class="flex-1 sm:flex-none border-2 border-orange-600 text-orange-600 hover:bg-orange-50 px-8 py-4 rounded-xl font-semibold transition-all duration-300">
                         Lihat Benefit
                     </button>
+                    <a href="{{ route('blog.index') }}"
+                       class="flex-1 sm:flex-none border-2 border-orange-500 text-orange-600 hover:bg-orange-10 px-8 py-4 rounded-xl font-semibold transition-all duration-300">
+                        Blog
+                    </a>
                 </div>
 
                 <!-- Trust Indicators -->
@@ -87,10 +91,10 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-sm text-slate-600">Tingkat Kelulusan</div>
-                                <div class="text-sm text-slate-600">meningkatkan percaya diri saat menjalani ujian</div>
+                                <div class="text-sm text-slate-600">Belajar dengan mentor berpengalaman dan terstruktur meningkatkan peluang kelulusan dan percaya diri saat menjalani ujian</div>
                                 <div class="text-2xl font-bold text-orange-600">95%</div>
                             </div>
-                            <div class="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center">
+                            <div class="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center">
                                 <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
                                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
