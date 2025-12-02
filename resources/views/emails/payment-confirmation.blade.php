@@ -112,7 +112,7 @@
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                 <tr>
                                     <td align="center">
-                                        <a href="{{ config('app.url') }}/admin/login"
+                                        <a href="{{ config('app.course_platform_url') }}"
                                            style="display: inline-block; padding: 14px 40px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 15px; letter-spacing: 0.3px;">
                                             Akses Platform Kursus
                                         </a>
