@@ -35,9 +35,14 @@ class BlogController extends Controller
         $featuredPost = null;
         if (!$request->has('page') || $request->page == 1) {
              $featuredPost = $query->clone()->latest()->first();
+             // Note: Featured post exclusion removed because the view (blog.index) 
+             // does not currently have a dedicated featured post section. 
+             // Excluding it here causes the latest post to disappear entirely.
+             /* 
              if ($featuredPost) {
                  $query->where('id', '!=', $featuredPost->id);
              }
+             */
         }
 
         $posts = $query->latest()->paginate(9);
