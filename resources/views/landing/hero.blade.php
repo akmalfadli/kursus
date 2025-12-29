@@ -22,7 +22,8 @@
                 </h1>
 
                 <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                    Persiapan lengkap dengan <strong>soal latihan</strong>, materi pembelajaran, dan mentoring langsung melalui zoom meeting. Tingkatkan peluang Anda hingga <span class="text-orange-600 font-bold">95%</span>!
+                    Persiapan lengkap ujian perangkat desa dengan <strong>soal latihan</strong>, materi pembelajaran, dan mentoring langsung melalui zoom meeting. Tingkatkan peluang LULUS hingga <span class="text-orange-600 font-bold">95%</span>!
+
                 </p>
 
                 <!-- Key Stats -->
