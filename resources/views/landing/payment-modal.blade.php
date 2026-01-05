@@ -5,6 +5,9 @@
                 <div>
                     <h3 class="text-2xl font-bold">Pilih Metode Pembayaran</h3>
                     <p class="text-sm opacity-90 mt-1">Total: <span id="modal-amount" class="font-bold"></span></p>
+                    <p id="modal-referral-note" class="text-xs mt-1 hidden">
+                        Termasuk diskon <span id="modal-discount-amount" class="font-semibold"></span> (<span id="modal-referral-code" class="font-semibold"></span>)
+                    </p>
                 </div>
                 <button id="close-modal" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">

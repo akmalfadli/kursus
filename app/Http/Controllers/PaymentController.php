@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\ContentBlock;
+use App\Services\PricingService;
 use App\Mail\PaymentConfirmation;
 use App\Mail\NewTransactionNotification;
 use Illuminate\Http\Request;
@@ -16,6 +17,9 @@ use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
+    public function __construct(private readonly PricingService $pricingService)
+    {
+    }
     // Step 1: Get available payment methods
     public function getPaymentMethods(Request $request)
     {
@@ -23,12 +27,12 @@ class PaymentController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'referral_code' => 'nullable|string|max:50',
         ]);
-
         try {
             // Get price dynamically from database
-            $amount = $this->getCoursePrice();
-
+            $pricing = $this->pricingService->calculatePricing($request->input('referral_code'));
+            $amount = $pricing['final_amount'];
             // Get available payment methods from Duitku
             $paymentMethods = $this->fetchDuitkuPaymentMethods($amount);
 
@@ -42,10 +46,12 @@ class PaymentController extends Controller
                     'payment_methods' => $paymentMethods,
                     'amount' => $amount,
                     'formatted_amount' => 'Rp ' . number_format($amount, 0, ',', '.'),
+                    'pricing' => $this->formatPricingResponse($pricing),
                     'user_data' => [
                         'name' => $request->name,
                         'email' => $request->email,
                         'phone' => $request->phone,
+                        'referral_code' => $pricing['referral']?->code ?? null,
                     ]
                 ]
             ]);
@@ -71,13 +77,14 @@ class PaymentController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'payment_method' => 'required|string|max:10',
+            'referral_code' => 'nullable|string|max:50',
         ]);
 
         try {
             $invoiceId = 'KPD-' . now()->format('YmdHis') . '-' . Str::random(6);
 
-            // Get price dynamically from database
-            $amount = $this->getCoursePrice();
+            $pricing = $this->pricingService->calculatePricing($request->input('referral_code'));
+            $amount = $pricing['final_amount'];
 
             // Get default class from database
             $defaultClass = $this->getDefaultClass();
@@ -89,9 +96,16 @@ class PaymentController extends Controller
                 'user_name' => $request->name,
                 'user_email' => $request->email,
                 'user_phone' => $request->phone,
+                'base_amount' => $pricing['base_amount'],
                 'amount' => $amount,
+                'referral_discount_amount' => $pricing['discount_amount'],
+                'referral_commission_amount' => $pricing['commission_amount'],
+                'referral_discount_percentage' => $pricing['referral']?->discount_percentage,
                 'payment_status' => 'pending',
                 'payment_method' => $request->payment_method,
+                'referral_id' => $pricing['referral']?->id,
+                'referral_code' => $pricing['referral']?->code,
+                'referral_commission_status' => $pricing['referral'] ? 'pending' : null,
             ]);
 
             Log::info('Transaction created (user will be created after payment)', [
@@ -129,7 +143,8 @@ class PaymentController extends Controller
                         'invoice_id' => $invoiceId,
                         'va_number' => $duitkuResponse['vaNumber'] ?? null,
                         'qr_string' => $duitkuResponse['qrString'] ?? null,
-                        'amount' => $amount
+                        'amount' => $amount,
+                        'pricing' => $this->formatPricingResponse($pricing),
                     ]
                 ]);
             }
@@ -216,6 +231,8 @@ class PaymentController extends Controller
                     'invoice_id' => $merchantOrderId,
                     'reference' => $request->input('reference')
                 ]);
+
+                $this->recordReferralUsage($transaction);
 
                 // Create user after payment
                 try {
@@ -516,33 +533,35 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Get course price dynamically from database
-     */
-    private function getCoursePrice(): int
+    private function recordReferralUsage(Transaction $transaction): void
     {
         try {
-            $price = ContentBlock::getNumberValue('course_price', config('course.price', 299000));
-            $price = (int) $price;
-
-            if ($price <= 0) {
-                Log::warning('Invalid course price from database, using fallback', [
-                    'database_price' => $price,
-                    'fallback_price' => config('course.price', 299000)
-                ]);
-                return (int) config('course.price', 299000);
-            }
-
-            Log::info('Course price loaded from database', ['price' => $price]);
-            return $price;
-
+            $this->pricingService->recordReferralUsage($transaction);
         } catch (\Exception $e) {
-            Log::error('Failed to get course price from database', [
+            Log::error('Failed to record referral usage', [
                 'error' => $e->getMessage(),
-                'fallback_price' => config('course.price', 299000)
+                'transaction_id' => $transaction->id,
             ]);
-            return (int) config('course.price', 299000);
         }
+    }
+
+    private function formatPricingResponse(array $pricing): array
+    {
+        return [
+            'base_amount' => $pricing['base_amount'],
+            'discount_amount' => $pricing['discount_amount'],
+            'final_amount' => $pricing['final_amount'],
+            'commission_amount' => $pricing['commission_amount'],
+            'formatted' => [
+                'base' => 'Rp ' . number_format($pricing['base_amount'], 0, ',', '.'),
+                'discount' => 'Rp ' . number_format($pricing['discount_amount'], 0, ',', '.'),
+                'final' => 'Rp ' . number_format($pricing['final_amount'], 0, ',', '.'),
+            ],
+            'referral' => $pricing['referral'] ? [
+                'code' => $pricing['referral']->code,
+                'discount_percentage' => $pricing['referral']->discount_percentage,
+            ] : null,
+        ];
     }
 
     /**
@@ -573,6 +592,9 @@ class PaymentController extends Controller
         $content = [
             'contact_email' => ContentBlock::getValue('contact_email', 'support@example.com'),
             'contact_phone' => ContentBlock::getValue('contact_phone', '+62 812-3456-7890'),
+            'price' => $this->pricingService->getBasePrice(),
+            'default_class' => ContentBlock::getValue('default_class', 'Kelas Umum'),
+            'course_name' => ContentBlock::getValue('hero_title', config('course.name', 'Kursus Ujian Perangkat Desa')),
         ];
 
         return view('thank-you', compact('transaction', 'content'));
@@ -730,6 +752,8 @@ class PaymentController extends Controller
                 'payment_status' => 'paid',
                 'paid_at' => now(),
             ]);
+
+            $this->recordReferralUsage($transaction);
 
             // ✅ Create user after payment confirmed
             $this->createUserAfterPayment($transaction);

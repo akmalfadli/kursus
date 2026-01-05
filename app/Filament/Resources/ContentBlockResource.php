@@ -6,12 +6,15 @@ use App\Filament\Resources\ContentBlockResource\Pages;
 use App\Models\ContentBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ContentBlockResource extends Resource
 {
@@ -54,55 +57,117 @@ class ContentBlockResource extends Resource
                             ])
                             ->required()
                             ->default('text')
-                            ->reactive(),
+                            ->reactive()
+                            ->afterStateUpdated(fn (Set $set) => $set('content', null)),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Konten')
                     ->schema([
-                        Forms\Components\TextInput::make('content')
-                            ->label('Konten')
-                            ->required()
+                        Forms\Components\Hidden::make('content'),
+
+                        Forms\Components\TextInput::make('content_text')
+                            ->label('Konten Teks Pendek')
                             ->maxLength(500)
-                            ->visible(fn ($get) => $get('type') === 'text'),
+                            ->visible(fn (Get $get) => $get('type') === 'text')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\TextInput $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'text') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state))
+                            ->required(fn (Get $get) => $get('type') === 'text'),
 
-                        Forms\Components\RichEditor::make('content')
-                            ->label('Konten')
-                            ->required()
-                            ->visible(fn ($get) => $get('type') === 'textarea'),
+                        Forms\Components\RichEditor::make('content_rich')
+                            ->label('Konten Teks Panjang')
+                            ->visible(fn (Get $get) => $get('type') === 'textarea')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\RichEditor $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'textarea') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state))
+                            ->required(fn (Get $get) => $get('type') === 'textarea'),
 
-                        Forms\Components\Textarea::make('content')
+                        Forms\Components\Textarea::make('content_json')
                             ->label('Data JSON')
-                            ->required()
                             ->rows(10)
                             ->helperText('Masukkan data dalam format JSON yang valid')
-                            ->visible(fn ($get) => $get('type') === 'json'),
+                            ->visible(fn (Get $get) => $get('type') === 'json')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\Textarea $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'json') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state))
+                            ->required(fn (Get $get) => $get('type') === 'json'),
 
-                        Forms\Components\FileUpload::make('content')
+                        Forms\Components\FileUpload::make('content_image')
                             ->label('Upload Gambar')
                             ->image()
                             ->directory('content-images')
                             ->maxSize(2048)
                             ->imageEditor()
-                            ->required()
-                            ->visible(fn ($get) => $get('type') === 'image'),
+                            ->visible(fn (Get $get) => $get('type') === 'image')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->getUploadedFileNameForStorageUsing(fn (TemporaryUploadedFile $file) => $file->hashName())
+                            ->afterStateHydrated(function (Forms\Components\FileUpload $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'image') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                $set('content', is_array($state) ? ($state[0] ?? null) : $state);
+                            })
+                            ->required(fn (Get $get) => $get('type') === 'image'),
 
-                        Forms\Components\TextInput::make('content')
+                        Forms\Components\TextInput::make('content_url')
                             ->label('URL')
                             ->url()
-                            ->required()
                             ->prefix('https://')
-                            ->visible(fn ($get) => $get('type') === 'url'),
+                            ->visible(fn (Get $get) => $get('type') === 'url')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\TextInput $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'url') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state))
+                            ->required(fn (Get $get) => $get('type') === 'url'),
 
-                        Forms\Components\TextInput::make('content')
+                        Forms\Components\TextInput::make('content_number')
                             ->label('Angka')
                             ->numeric()
-                            ->required()
-                            ->visible(fn ($get) => $get('type') === 'number'),
+                            ->visible(fn (Get $get) => $get('type') === 'number')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\TextInput $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'number') {
+                                    $component->state($record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state))
+                            ->required(fn (Get $get) => $get('type') === 'number'),
 
-                        Forms\Components\Toggle::make('content')
+                        Forms\Components\Toggle::make('content_boolean')
                             ->label('Status')
-                            ->required()
-                            ->visible(fn ($get) => $get('type') === 'boolean'),
+                            ->visible(fn (Get $get) => $get('type') === 'boolean')
+                            ->dehydrated(false)
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Components\Toggle $component, ?ContentBlock $record) {
+                                if ($record && $record->type === 'boolean') {
+                                    $component->state((bool) $record->content);
+                                }
+                            })
+                            ->afterStateUpdated(fn ($state, Set $set) => $set('content', $state ? '1' : '0'))
+                            ->required(fn (Get $get) => $get('type') === 'boolean'),
                     ])->columnSpanFull(),
 
                 Forms\Components\Section::make('Pengaturan Tambahan')

@@ -18,9 +18,14 @@
                 <div class="inline-block bg-red-100 border-2 border-orange-500 rounded-xl px-3 py-3 mb-2">
                     <div class="text-orange-600 font-bold text-md mb-1">❗ KURSUS {{ strtoupper($content['default_class']) }} SEGERA DIMULAI ❗</div>
                     <div class="text-orange-600 font-bold text-md mb-1">DISKON 60%</div>
-                    <div class="flex items-center justify-center gap-3">
+                    <div class="flex flex-col items-center gap-1">
                         <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
-                        <span class="text-2xl font-bold text-orange-600">Rp {{ number_format($content['price'], 0, ',', '.') }}</span>
+                        <span class="text-2xl font-bold text-orange-600" id="promo-current-amount">
+                            Rp {{ number_format($content['price'], 0, ',', '.') }}
+                        </span>
+                        <span id="promo-referral-note" class="hidden text-sm font-semibold text-white">
+                            Hemat <span id="promo-discount-amount"></span> dengan kode <span id="promo-referral-code"></span>
+                        </span>
                     </div>
                 </div>
             </div>

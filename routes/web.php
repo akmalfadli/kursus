@@ -5,6 +5,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ReferralController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,4 +66,5 @@ Route::get('/health', function () {
 Route::prefix('api')->name('api.')->group(function () {
     Route::post('/transaction/status', [PaymentController::class, 'checkStatus'])->name('transaction.status');
     Route::post('/analytics/track', [App\Http\Controllers\Api\AnalyticsController::class, 'track'])->name('analytics.track');
+    Route::post('/referrals/validate', [ReferralController::class, 'validateCode'])->name('referrals.validate');
 });

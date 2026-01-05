@@ -25,8 +25,15 @@
                 <!-- Price -->
                 <div class="text-center mb-8">
                     <div class="text-slate-500 text-lg line-through mb-2">Rp 500.000</div>
-                    <div class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 mb-2">
-                        Rp {{ number_format($content['price'], 0, ',', '.') }}
+                    <div class="space-y-2">
+                        <div class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+                            <span id="pricing-current-amount" data-base-price="{{ (int) $content['price'] }}">
+                                Rp {{ number_format($content['price'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <p id="pricing-referral-note" class="hidden text-base font-semibold text-orange-600">
+                            Hemat <span id="pricing-discount-amount"></span> dengan kode <span id="pricing-referral-code"></span>
+                        </p>
                     </div>
                     <div class="text-slate-600 font-medium">Pembayaran Sekali - Akses 1 Tahun</div>
                 </div>
@@ -84,7 +91,7 @@
                 </div>
 
                 <!-- Form -->
-                <form id="customer-form" class="space-y-4">
+                <form id="customer-form" class="space-y-6">
                     @csrf
                     <div class="grid md:grid-cols-2 gap-4">
                         <input type="text" name="name" placeholder="Nama Lengkap *" required
@@ -97,6 +104,23 @@
                     <input type="tel" name="phone" placeholder="Nomor WhatsApp"
                         class="w-full px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors"
                         pattern="^(\+62|62|0)[0-9]{8,13}$">
+
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="referral-code-input" class="text-sm font-semibold text-slate-700">Kode Referral (Opsional)</label>
+                            <span id="referral-status-chip" class="hidden text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700"></span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" name="referral_code" id="referral-code-input" placeholder="Contoh: KANDAR2026"
+                                class="flex-1 px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors uppercase"
+                                maxlength="50" autocomplete="off">
+                            <button type="button" id="check-referral-btn"
+                                class="sm:w-40 w-full bg-slate-900 text-white font-semibold rounded-xl px-4 py-3 shadow hover:shadow-lg transition-all">
+                                Cek Kode
+                            </button>
+                        </div>
+                        <p id="referral-feedback" class="text-sm text-slate-500"></p>
+                    </div>
 
                     <button type="submit" id="choose-payment-btn"
                             class="w-full bg-gradient-to-r from-blue-600 to-orange-600 hover:from-orange-700 hover:to-blue-700 text-white py-5 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">

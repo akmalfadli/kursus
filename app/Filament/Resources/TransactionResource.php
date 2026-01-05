@@ -96,6 +96,33 @@ class TransactionResource extends Resource
                             ->label('Tanggal Bayar'),
                     ])->columns(2),
 
+                Forms\Components\Section::make('Informasi Referral')
+                    ->schema([
+                        Forms\Components\TextInput::make('referral_code')
+                            ->label('Kode Referral')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('base_amount')
+                            ->label('Harga Awal')
+                            ->prefix('Rp')
+                            ->numeric()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('referral_discount_amount')
+                            ->label('Diskon Referral')
+                            ->prefix('Rp')
+                            ->numeric()
+                            ->disabled(),
+                        Forms\Components\Select::make('referral_commission_status')
+                            ->label('Status Komisi')
+                            ->options([
+                                'pending' => 'Belum Dibayar',
+                                'paid' => 'Dibayar',
+                            ])
+                            ->native(false)
+                            ->placeholder('Tidak Ada'),
+                        Forms\Components\DateTimePicker::make('referral_commission_paid_at')
+                            ->label('Komisi Dibayar Pada'),
+                    ])->columns(2)->collapsible(),
+
                 Forms\Components\Section::make('Data Teknis')
                     ->schema([
                         Forms\Components\TextInput::make('duitku_reference')
@@ -143,6 +170,34 @@ class TransactionResource extends Resource
                             ->money('IDR')
                             ->label('Total'),
                     ]),
+
+                TextColumn::make('referral_discount_amount')
+                    ->label('Diskon')
+                    ->money('IDR')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('referral_code')
+                    ->label('Referral')
+                    ->badge()
+                    ->color('warning')
+                    ->toggleable(),
+
+                BadgeColumn::make('referral_commission_status')
+                    ->label('Komisi')
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'paid',
+                    ])
+                    ->icons([
+                        'pending' => 'heroicon-o-clock',
+                        'paid' => 'heroicon-o-banknotes',
+                    ])
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'pending' => 'Belum Dibayar',
+                        'paid' => 'Dibayar',
+                        default => 'Tidak Ada',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 BadgeColumn::make('payment_status')
                     ->label('Status')
@@ -240,6 +295,18 @@ class TransactionResource extends Resource
                                 fn (Builder $query, $amount): Builder => $query->where('amount', '<=', $amount),
                             );
                     }),
+
+                Filter::make('has_referral')
+                    ->label('Dengan Referral')
+                    ->query(fn (Builder $query): Builder => $query->whereNotNull('referral_code')),
+
+                SelectFilter::make('referral_commission_status')
+                    ->label('Status Komisi')
+                    ->options([
+                        'pending' => 'Belum Dibayar',
+                        'paid' => 'Dibayar',
+                    ])
+                    ->placeholder('Semua'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -247,6 +314,19 @@ class TransactionResource extends Resource
 
                 Tables\Actions\EditAction::make()
                     ->label('Edit'),
+
+                Action::make('mark_commission_paid')
+                    ->label('Tandai Komisi Dibayar')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('primary')
+                    ->visible(fn (Transaction $record) => $record->referral_commission_status === 'pending')
+                    ->requiresConfirmation()
+                    ->action(function (Transaction $record) {
+                        $record->update([
+                            'referral_commission_status' => 'paid',
+                            'referral_commission_paid_at' => now(),
+                        ]);
+                    }),
 
                 Action::make('send_access')
                     ->label('Kirim Akses')

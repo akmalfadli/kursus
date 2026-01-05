@@ -208,8 +208,15 @@
                     <!-- Price -->
                     <div class="text-center mb-8">
                         <div class="text-slate-500 text-lg line-through mb-2">Rp 500.000</div>
-                        <div class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600 mb-2">
-                            Rp {{ number_format($content['price'], 0, ',', '.') }}
+                        <div class="space-y-2">
+                            <div class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+                                <span id="pricing-current-amount" data-base-price="{{ (int) $content['price'] }}">
+                                    Rp {{ number_format($content['price'], 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <p id="pricing-referral-note" class="hidden text-base font-semibold text-orange-600">
+                                Hemat <span id="pricing-discount-amount"></span> dengan kode <span id="pricing-referral-code"></span>
+                            </p>
                         </div>
                         <div class="text-slate-600 font-medium">Pembayaran Sekali - Akses Selamanya</div>
                     </div>
@@ -267,7 +274,7 @@
                     </div>
 
                     <!-- Form -->
-                    <form id="customer-form" class="space-y-4">
+                    <form id="customer-form" class="space-y-6">
                         @csrf
                         <div class="grid md:grid-cols-2 gap-4">
                             <input type="text" name="name" placeholder="Nama Lengkap *" required
@@ -281,7 +288,24 @@
                             class="w-full px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors"
                             pattern="^(\+62|62|0)[0-9]{8,13}$">
 
-                        <button type="submit" id="choose-payment-btn"
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="referral-code-input" class="text-sm font-semibold text-slate-700">Kode Referral (Opsional)</label>
+                                <span id="referral-status-chip" class="hidden text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700"></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="text" name="referral_code" id="referral-code-input" placeholder="Contoh: KANDAR2026"
+                                    class="flex-1 px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors uppercase"
+                                    maxlength="50" autocomplete="off">
+                                <button type="button" id="check-referral-btn"
+                                    class="sm:w-40 w-full bg-slate-900 text-white font-semibold rounded-xl px-4 py-3 shadow hover:shadow-lg transition-all">
+                                    Cek Kode
+                                </button>
+                            </div>
+                            <p id="referral-feedback" class="text-sm text-slate-500"></p>
+                        </div>
+
+                    <button type="submit" id="choose-payment-btn"
                                 class="w-full bg-gradient-to-r from-blue-600 to-orange-600 hover:from-orange-700 hover:to-blue-700 text-white py-5 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                             <span id="button-text" class="flex items-center justify-center gap-2">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -343,6 +367,9 @@
                     <div>
                         <h3 class="text-2xl font-bold">Pilih Metode Pembayaran</h3>
                         <p class="text-sm opacity-90 mt-1">Total: <span id="modal-amount" class="font-bold"></span></p>
+                        <p id="modal-referral-note" class="text-xs mt-1 hidden">
+                            Termasuk diskon <span id="modal-discount-amount" class="font-semibold"></span> (<span id="modal-referral-code" class="font-semibold"></span>)
+                        </p>
                     </div>
                     <button id="close-modal" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -406,10 +433,15 @@
                     <div class="inline-block bg-red-100 border-2 border-orange-500 rounded-xl px-3 py-3 mb-2">
                         <div class="text-orange-600 font-bold text-md mb-1">❗ KURSUS {{ strtoupper($content['default_class']) }} SEGERA DIMULAI ❗</div>
                         <div class="text-orange-600 font-bold text-md mb-1">DISKON 60%</div>
-                        <div class="flex items-center justify-center gap-3">
-                            <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
-                            <span class="text-2xl font-bold text-orange-600">Rp {{ number_format($content['price'], 0, ',', '.') }}</span>
-                        </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
+                        <span class="text-2xl font-bold text-orange-600" id="promo-current-amount">
+                            Rp {{ number_format($content['price'], 0, ',', '.') }}
+                        </span>
+                        <span id="promo-referral-note" class="hidden text-sm font-semibold text-white">
+                            Hemat <span id="promo-discount-amount"></span> dengan kode <span id="promo-referral-code"></span>
+                        </span>
+                    </div>
                     </div>
                 </div>
 
@@ -669,341 +701,7 @@
 </div>
 @endif
 
-<script>
-// Smooth scrolling
-function scrollToSection(sectionId) {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+@include('landing.scripts')
+@include('landing.analytics')
 
-// Payment flow (keep existing JavaScript logic)
-document.addEventListener('DOMContentLoaded', function() {
-    const customerForm = document.getElementById('customer-form');
-    const choosePaymentBtn = document.getElementById('choose-payment-btn');
-    const buttonText = document.getElementById('button-text');
-    const buttonLoading = document.getElementById('button-loading');
-    const paymentModal = document.getElementById('payment-method-modal');
-    const closeModal = document.getElementById('close-modal');
-    const paymentMethodsLoading = document.getElementById('payment-methods-loading');
-    const paymentMethodsContainer = document.getElementById('payment-methods-container');
-    const paymentMethodsError = document.getElementById('payment-methods-error');
-    const paymentMethodsList = document.getElementById('payment-methods-list');
-    const proceedPaymentBtn = document.getElementById('proceed-payment-btn');
-    const retryBtn = document.getElementById('retry-payment-methods');
-
-    // Promo Popup Elements
-    const promoPopup = document.getElementById('promo-popup');
-    const closePromoPopup = document.getElementById('close-promo-popup');
-    const promoDaftarBtn = document.getElementById('promo-daftar-btn');
-    let promoShown = false;
-
-    // Detect scroll to bottom
-    window.addEventListener('scroll', function() {
-        if (promoShown) return;
-
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-        const clientHeight = document.documentElement.clientHeight;
-
-        // Check if user scrolled to bottom (with 100px threshold)
-        if (scrollTop + clientHeight >= scrollHeight - 800) {
-            showPromoPopup();
-            promoShown = true;
-        }
-    });
-
-    // Show promo popup
-    function showPromoPopup() {
-        promoPopup.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    // Close promo popup
-    function closePromoPopupFunc() {
-        promoPopup.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    closePromoPopup.addEventListener('click', closePromoPopupFunc);
-
-    // Click outside to close
-    promoPopup.addEventListener('click', function(e) {
-        if (e.target === promoPopup) {
-            closePromoPopupFunc();
-        }
-    });
-
-    // Promo Daftar button triggers scroll to pricing and close popup
-    promoDaftarBtn.addEventListener('click', function() {
-        closePromoPopupFunc();
-        scrollToSection('pricing');
-        // Wait for scroll then focus on form
-        setTimeout(() => {
-            const nameInput = document.querySelector('input[name="name"]');
-            if (nameInput) {
-                nameInput.focus();
-                nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 800);
-    });
-
-    let currentUserData = null;
-    let currentPaymentMethods = null;
-    let selectedPaymentMethod = null;
-
-    const phoneInput = document.querySelector('input[name="phone"]');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.startsWith('62')) value = '+' + value;
-            else if (value.startsWith('0')) value = value;
-            else if (value.length > 0) value = '0' + value;
-            e.target.value = value;
-        });
-    }
-
-    customerForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(customerForm);
-        const customerData = {
-            name: formData.get('name').trim(),
-            email: formData.get('email').trim(),
-            phone: formData.get('phone').trim()
-        };
-
-        if (customerData.name.length < 2) {
-            showError('Nama harus minimal 2 karakter');
-            return;
-        }
-        if (!isValidEmail(customerData.email)) {
-            showError('Format email tidak valid');
-            return;
-        }
-
-        currentUserData = customerData;
-        fetchPaymentMethods(customerData);
-    });
-
-    function fetchPaymentMethods(customerData) {
-        setButtonLoading(true);
-        fetch('{{ route("payment.methods") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify(customerData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            setButtonLoading(false);
-            if (data.status === 'success') {
-                currentPaymentMethods = data.data.payment_methods;
-                showPaymentMethodModal(data.data);
-            } else {
-                showError(data.message || 'Gagal mengambil metode pembayaran');
-            }
-        })
-        .catch(error => {
-            setButtonLoading(false);
-            console.error('Error:', error);
-            showError('Terjadi kesalahan. Silakan coba lagi.');
-        });
-    }
-
-    function showPaymentMethodModal(data) {
-        document.getElementById('modal-amount').textContent = data.formatted_amount;
-        paymentModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        loadPaymentMethods(data.payment_methods);
-    }
-
-    function loadPaymentMethods(paymentMethods) {
-        paymentMethodsLoading.classList.remove('hidden');
-        paymentMethodsContainer.classList.add('hidden');
-        paymentMethodsError.classList.add('hidden');
-
-        if (!paymentMethods || paymentMethods.length === 0) {
-            showPaymentMethodsError();
-            return;
-        }
-
-        paymentMethodsList.innerHTML = '';
-        paymentMethods.forEach(method => {
-            const methodElement = createPaymentMethodElement(method);
-            paymentMethodsList.appendChild(methodElement);
-        });
-
-        setTimeout(() => {
-            paymentMethodsLoading.classList.add('hidden');
-            paymentMethodsContainer.classList.remove('hidden');
-        }, 500);
-    }
-
-    function createPaymentMethodElement(method) {
-        const div = document.createElement('div');
-        div.className = 'payment-method-option border-2 border-slate-200 p-4 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 rounded-xl';
-        div.dataset.paymentMethod = method.paymentMethod;
-
-        div.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden rounded-lg">
-                        <img src="${method.paymentImage}" alt="${method.paymentName}" class="max-w-full max-h-full object-contain"
-                             onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\"text-xs text-slate-500\\">${method.paymentMethod}</span>'">
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800">${method.paymentName}</h4>
-                        <p class="text-xs text-slate-500">${method.paymentMethod}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    ${method.totalFee === '0' || method.totalFee === 0 ?
-                        '<span class="text-green-600 text-sm font-bold">Gratis</span>' :
-                        `<span class="text-slate-600 text-xs">+Rp ${parseInt(method.totalFee).toLocaleString('id-ID')}</span>`
-                    }
-                    <div class="w-6 h-6 border-2 border-slate-300 rounded-full payment-radio transition-all"></div>
-                </div>
-            </div>
-        `;
-
-        div.addEventListener('click', function() {
-            selectPaymentMethod(method, div);
-        });
-
-        return div;
-    }
-
-    function selectPaymentMethod(method, element) {
-        document.querySelectorAll('.payment-method-option').forEach(el => {
-            el.classList.remove('border-orange-500', 'bg-orange-50');
-            const radio = el.querySelector('.payment-radio');
-            radio.classList.remove('border-orange-500', 'bg-orange-500');
-            radio.innerHTML = '';
-        });
-
-        element.classList.add('border-orange-500', 'bg-orange-50');
-        const radio = element.querySelector('.payment-radio');
-        radio.classList.add('border-orange-500', 'bg-orange-500');
-        radio.innerHTML = '<div class="w-3 h-3 bg-white rounded-full mx-auto"></div>';
-
-        selectedPaymentMethod = method;
-        proceedPaymentBtn.disabled = false;
-        document.getElementById('proceed-text').textContent = `Bayar ${method.paymentName}`;
-    }
-
-    function showPaymentMethodsError() {
-        paymentMethodsLoading.classList.add('hidden');
-        paymentMethodsContainer.classList.add('hidden');
-        paymentMethodsError.classList.remove('hidden');
-    }
-
-    proceedPaymentBtn.addEventListener('click', function() {
-        if (!selectedPaymentMethod) return;
-        createTransaction();
-    });
-
-    function createTransaction() {
-        const proceedText = document.getElementById('proceed-text');
-        const proceedLoading = document.getElementById('proceed-loading');
-
-        proceedPaymentBtn.disabled = true;
-        proceedText.classList.add('hidden');
-        proceedLoading.classList.remove('hidden');
-
-        const transactionData = {
-            ...currentUserData,
-            payment_method: selectedPaymentMethod.paymentMethod
-        };
-
-        fetch('{{ route("payment.initiate") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify(transactionData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                localStorage.setItem('payment_form_data', JSON.stringify({
-                    name: currentUserData.name,
-                    email: currentUserData.email,
-                    invoice_id: data.data.invoice_id,
-                    timestamp: Date.now()
-                }));
-                window.location.href = data.data.payment_url;
-            } else {
-                showError(data.message || 'Gagal membuat pembayaran');
-                resetProceedButton();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('Terjadi kesalahan. Silakan coba lagi.');
-            resetProceedButton();
-        });
-    }
-
-    function resetProceedButton() {
-        const proceedText = document.getElementById('proceed-text');
-        const proceedLoading = document.getElementById('proceed-loading');
-        proceedPaymentBtn.disabled = false;
-        proceedText.classList.remove('hidden');
-        proceedLoading.classList.add('hidden');
-    }
-
-    closeModal.addEventListener('click', hidePaymentMethodModal);
-    retryBtn.addEventListener('click', function() {
-        if (currentUserData) fetchPaymentMethods(currentUserData);
-    });
-
-    paymentModal.addEventListener('click', function(e) {
-        if (e.target === paymentModal) hidePaymentMethodModal();
-    });
-
-    function hidePaymentMethodModal() {
-        paymentModal.classList.add('hidden');
-        document.body.style.overflow = '';
-        selectedPaymentMethod = null;
-        proceedPaymentBtn.disabled = true;
-        document.getElementById('proceed-text').textContent = 'Pilih Metode Pembayaran';
-    }
-
-    function setButtonLoading(loading) {
-        choosePaymentBtn.disabled = loading;
-        if (loading) {
-            buttonText.classList.add('hidden');
-            buttonLoading.classList.remove('hidden');
-        } else {
-            buttonText.classList.remove('hidden');
-            buttonLoading.classList.add('hidden');
-        }
-    }
-
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function showError(message) {
-        const existingNotifications = document.querySelectorAll('.notification-error');
-        existingNotifications.forEach(notif => notif.remove());
-
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-xl shadow-2xl z-50 max-w-sm notification-error';
-        notification.innerHTML = `
-            <div class="flex items-center justify-between">
-                <span class="text-sm">${message}</span>
-                <button onclick="this.parentElement.parentElement.remove()" class="ml-4">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
-    }
-});
-</script>
 @endsection
