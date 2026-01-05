@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateReferral(code, showFeedback = false) {
         if (!csrfToken) return;
         setReferralLoading(true);
+        setReferralInputState('loading');
         fetch('{{ route('api.referrals.validate') }}', {
             method: 'POST',
             headers: {
@@ -178,14 +179,20 @@ document.addEventListener('DOMContentLoaded', () => {
             applyPricingFromServer(payload.data);
             setReferralSuccess(payload.data.code);
             if (showFeedback) {
-                setReferralFeedback(`Kode ${payload.data.code} aktif!`, 'success');
+                setReferralFeedback('Kode referal ditemukan', 'success');
             }
         })
         .catch((error) => {
             resetReferralState();
             setReferralFeedback(error.message || 'Kode referral tidak valid', 'error');
+            setReferralInputState('error');
         })
-        .finally(() => setReferralLoading(false));
+        .finally(() => {
+            setReferralLoading(false);
+            if (!referralInput.value.trim()) {
+                setReferralInputState('neutral');
+            }
+        });
     }
 
     function applyPricingFromServer(serverPricing) {
@@ -204,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePricingDisplays() {
+        const hasDiscount = currentPricing.discount_amount > 0 && currentPricing.referral;
+
         if (pricingAmountEl) {
             pricingAmountEl.dataset.basePrice = currentPricing.base_amount;
             pricingAmountEl.textContent = formatCurrency(currentPricing.final_amount);
@@ -212,7 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
             promoAmountEl.textContent = formatCurrency(currentPricing.final_amount);
         }
 
-        const hasDiscount = currentPricing.discount_amount > 0 && currentPricing.referral;
+        if (hasDiscount && currentPricing.referral) {
+            setReferralSuccess(currentPricing.referral.code);
+        } else if (!hasDiscount) {
+            setReferralInputState('neutral');
+        }
 
         if (pricingNoteEl && pricingDiscountEl && pricingCodeEl) {
             pricingNoteEl.classList.toggle('hidden', !hasDiscount);
@@ -257,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         referralStatusChip?.classList.add('hidden');
+        setReferralInputState('neutral');
         updatePricingDisplays();
     }
 
@@ -281,6 +295,19 @@ document.addEventListener('DOMContentLoaded', () => {
         referralStatusChip.classList.remove('bg-red-100', 'text-red-700');
         referralStatusChip.classList.add('bg-green-100', 'text-green-700');
         referralStatusChip.textContent = `Aktif (${code})`;
+        setReferralFeedback('Kode referal ditemukan', 'success');
+        setReferralInputState('success');
+    }
+
+    function setReferralInputState(state) {
+        if (!referralInput) return;
+        referralInput.classList.remove('border-red-500', 'border-green-500', 'focus:border-red-500', 'focus:border-green-500');
+
+        if (state === 'success') {
+            referralInput.classList.add('border-green-500', 'focus:border-green-500');
+        } else if (state === 'error') {
+            referralInput.classList.add('border-red-500', 'focus:border-red-500');
+        }
     }
 
     function fetchPaymentMethods(customerData) {
