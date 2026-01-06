@@ -62,6 +62,14 @@ class ContentBlockSeeder extends Seeder
                 'is_active' => true
             ],
             [
+                'key' => 'promo_video_url',
+                'title' => 'Link Video Promo Youtube',
+                'content' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                'type' => 'url',
+                'description' => 'Tempelkan link video YouTube untuk ditampilkan di landing page',
+                'is_active' => true
+            ],
+            [
                 'key' => 'about_title',
                 'title' => 'About Title',
                 'content' => 'Tentang Kursus',

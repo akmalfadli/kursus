@@ -33,7 +33,10 @@ class LandingPageController extends Controller
             'social_instagram' => ContentBlock::getValue('social_instagram', 'https://instagram.com'),
             'social_facebook' => ContentBlock::getValue('social_facebook', 'https://facebook.com'),
             'success_rate' => '98%', // You can calculate this based on your data
+            'promo_video_url' => ContentBlock::getValue('promo_video_url', ''),
         ];
+
+        $content['promo_video_embed'] = $this->formatYoutubeEmbedUrl($content['promo_video_url']);
 
         $latestPosts = Post::where('is_published', true)
             // ->where(function ($query) {
@@ -93,5 +96,46 @@ class LandingPageController extends Controller
                 'content' => 'Penjelasan materi mudah dipahami dan latihan soalnya sangat mirip dengan ujian sebenarnya.'
             ]
         ];
+    }
+
+    private function formatYoutubeEmbedUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+
+        $url = trim($url);
+        $videoId = null;
+
+        $parsed = @parse_url($url);
+        $host = $parsed['host'] ?? '';
+        $path = $parsed['path'] ?? '';
+
+        if (str_contains($host, 'youtu.be')) {
+            $videoId = ltrim($path, '/');
+        }
+
+        if (!$videoId && str_contains($host, 'youtube.com')) {
+            if (str_contains($path, '/embed/')) {
+                $videoId = trim(str_replace('/embed/', '', $path), '/');
+            } elseif (str_contains($path, '/shorts/')) {
+                $videoId = trim(str_replace('/shorts/', '', $path), '/');
+            } elseif (($parsed['query'] ?? false)) {
+                parse_str($parsed['query'], $params);
+                if (!empty($params['v'])) {
+                    $videoId = $params['v'];
+                }
+            }
+        }
+
+        if (!$videoId) {
+            if (preg_match('/youtu\.be\/([\w-]+)/', $url, $matches)) {
+                $videoId = $matches[1];
+            } elseif (preg_match('/v=([\w-]+)/', $url, $matches)) {
+                $videoId = $matches[1];
+            }
+        }
+
+        return $videoId ? sprintf('https://www.youtube.com/embed/%s', $videoId) : null;
     }
 }

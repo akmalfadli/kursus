@@ -12,6 +12,8 @@
 
     @include('landing.benefits')
 
+    @include('landing.promo-video')
+
     <!-- Testimonials Section is commented out in original code -->
     {{--   @include('landing.testimonials')  --}}
 
