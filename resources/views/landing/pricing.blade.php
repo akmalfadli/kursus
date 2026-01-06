@@ -18,7 +18,7 @@
         <div class="bg-gradient-to-br from-white to-orange-50 rounded-3xl shadow-2xl overflow-hidden border-4 border-orange-500">
             <!-- Badge -->
             <div class="bg-gradient-to-r from-blue-600 to-orange-600 text-white text-center py-3 font-bold">
-                🔥 PAKET TERLARIS - HEMAT 50%
+                🔥 PAKET TERLARIS - HEMAT 5{{ strtoupper($content['discount_text']) }}
             </div>
 
             <div class="p-8 lg:p-12">

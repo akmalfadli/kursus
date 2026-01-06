@@ -17,7 +17,7 @@
             <div class="text-center mb-3">
                 <div class="inline-block bg-red-100 border-2 border-orange-500 rounded-xl px-3 py-3 mb-2">
                     <div class="text-orange-600 font-bold text-md mb-1">❗ KURSUS {{ strtoupper($content['default_class']) }} SEGERA DIMULAI ❗</div>
-                    <div class="text-orange-600 font-bold text-md mb-1">DISKON 60%</div>
+                    <div class="text-orange-600 font-bold text-md mb-1">DISKON {{ strtoupper($content['discount_text']) }}</div>
                     <div class="flex flex-col items-center gap-1">
                         <span class="text-xl text-slate-400 line-through">Rp 500.000</span>
                         <span class="text-2xl font-bold text-orange-600" id="promo-current-amount">
@@ -119,7 +119,7 @@
             <div class="sticky bottom-0 bg-white p-4 z-10">
                 <button id="promo-daftar-btn" class="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-4 rounded-xl font-bold text-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 animate-pulse-slow">
                 <span class="flex items-center justify-center gap-3">
-                    DAFTAR SEKARANG <br> HEMAT 60%
+                    DAFTAR SEKARANG <br> HEMAT {{ strtoupper($content['discount_text']) }}
                 </span>
                 </button>
             </div>
