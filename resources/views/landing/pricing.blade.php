@@ -120,6 +120,7 @@
                             </button>
                         </div>
                         <p id="referral-feedback" class="text-sm text-slate-500"></p>
+
                     </div>
 
                     <button type="submit" id="choose-payment-btn"
@@ -174,4 +175,5 @@
             </div>
         </div>
     </div>
+
 </section>

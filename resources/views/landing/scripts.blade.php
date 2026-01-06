@@ -310,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     function fetchPaymentMethods(customerData) {
         if (!csrfToken) return;
         setButtonLoading(true);
