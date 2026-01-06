@@ -111,7 +111,7 @@
                             <span id="referral-status-chip" class="hidden text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700"></span>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <input type="text" name="referral_code" id="referral-code-input" placeholder="Contoh: KANDAR2026"
+                            <input type="text" name="referral_code" id="referral-code-input" placeholder="Contoh: DISKON26"
                                 class="flex-1 px-4 py-4 border-2 border-slate-200 focus:border-orange-500 focus:outline-none rounded-xl text-base transition-colors uppercase"
                                 maxlength="50" autocomplete="off">
                             <button type="button" id="check-referral-btn"
