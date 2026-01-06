@@ -25,6 +25,7 @@ class LandingPageController extends Controller
             'contact_email' => ContentBlock::getValue('contact_email', 'support@example.com'),
             'contact_phone' => ContentBlock::getValue('contact_phone', '+62 812-3456-7890'),
             'default_class' => ContentBlock::getValue('default_class', 'Batch 1'),
+            'discount_text' => ContentBlock::getValue('discount_text', '50%'),
 
             // Stats for social proof
             'total_students' => User::where('role', 'customer')->count(),
