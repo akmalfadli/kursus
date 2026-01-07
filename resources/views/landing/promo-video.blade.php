@@ -1,10 +1,10 @@
 @if (!empty($content['promo_video_embed']))
-    <section class="px-8 bg-gradient-to-br from-white to-orange-50 relative overflow-hidden">
+    <section class="bg-gradient-to-br from-white to-orange-50 relative overflow-hidden">
         <!-- Decoration Background -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-orange-100 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-orange-100 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2"></div>
         <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2"></div>
 
-        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center relative p-4 lg:p-10 z-10">
+        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center relative mt-8 mb-8 z-10">
             <!-- Text Content -->
             <div class="space-y-6">
                 <div class="inline-flex items-center gap-2 px-3 py-1 mr-8 rounded-full bg-orange-100 border border-orange-200 text-orange-600 text-xs font-bold uppercase tracking-wider">
@@ -39,8 +39,8 @@
             <!-- Video Player -->
             <div class="relative group">
                 <!-- Abstract blobs decoration behind video -->
-                <div class="absolute -top-4 -right-4 w-24 h-24 bg-orange-200 rounded-full blur-xl opacity-60 group-hover:scale-150 transition-transform duration-500"></div>
-                <div class="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-200 rounded-full blur-xl opacity-60 group-hover:scale-150 transition-transform duration-500"></div>
+                <div class="absolute -top-4 -right-4 w-34 h-40 bg-orange-200 rounded-full blur-xl opacity-60 group-hover:scale-150 transition-transform duration-500"></div>
+                <div class="absolute -bottom-4 -left-4 w-34 h-40 bg-blue-200 rounded-full blur-xl opacity-60 group-hover:scale-150 transition-transform duration-500"></div>
 
                 <div class="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-slate-900 transform transition-transform duration-300 hover:scale-[1.02]">
                     <div class="w-full" style="aspect-ratio: 16 / 9;">
