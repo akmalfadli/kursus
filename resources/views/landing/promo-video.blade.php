@@ -4,7 +4,8 @@
         <div class="absolute top-0 right-0 w-64 h-64 bg-orange-100 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2"></div>
         <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2"></div>
 
-        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center p-4 relative z-10">
+        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center px-4 lg:px-0 py-4 lg:py-0 relative z-10">
+
             <!-- Text Content -->
             <div class="space-y-6">
                 <div class="inline-flex items-center gap-2 px-3 py-1 mr-8 rounded-full bg-orange-100 border border-orange-200 text-orange-600 text-xs font-bold uppercase tracking-wider">
