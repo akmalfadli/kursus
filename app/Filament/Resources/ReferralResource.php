@@ -144,7 +144,10 @@ class ReferralResource extends Resource
                     ->label('Tandai Komisi Dibayar')
                     ->icon('heroicon-o-currency-dollar')
                     ->requiresConfirmation()
-                    ->visible(fn (Referral $record) => $record->transactions()->where('referral_commission_status', 'pending')->exists())
+                    ->visible(fn (Referral $record) => $record->transactions()
+                        ->where('payment_status', 'paid')
+                        ->where('referral_commission_status', 'pending')
+                        ->exists())
                     ->action(function (Referral $record) {
                         $record->transactions()
                             ->where('referral_commission_status', 'pending')
