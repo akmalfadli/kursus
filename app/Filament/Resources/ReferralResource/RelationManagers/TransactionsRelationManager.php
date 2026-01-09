@@ -53,7 +53,7 @@ class TransactionsRelationManager extends RelationManager
                     ->label('Tandai Komisi Dibayar')
                     ->icon('heroicon-o-check-circle')
                     ->requiresConfirmation()
-                    ->visible(fn (Transaction $record) => $record->referral_commission_status === 'pending')
+                    ->visible(fn (Transaction $record) => $record->referral_commission_status === 'paid')
                     ->action(function (Transaction $record) {
                         $record->update([
                             'referral_commission_status' => 'paid',
