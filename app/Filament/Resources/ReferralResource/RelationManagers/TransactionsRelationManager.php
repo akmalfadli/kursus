@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Models\Transaction;
+use Illuminate\Database\Eloquent\Builder;
 
 class TransactionsRelationManager extends RelationManager
 {
@@ -17,6 +18,7 @@ class TransactionsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('invoice_id')
+            ->modifyQueryUsing(fn (Builder $query) => $query->where('payment_status', 'paid'))
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_id')
                     ->label('Invoice')
