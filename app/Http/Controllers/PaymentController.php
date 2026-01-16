@@ -404,6 +404,7 @@ class PaymentController extends Controller
             $apiUrl = ContentBlock::getValue('api_trigger_url');
             $bearerToken = ContentBlock::getValue('api_bearer_token');
             $defaultClass = $this->getDefaultClass();
+            $whatsappGroup = ContentBlock::getValue('whatsapp_group');
 
             if (empty($apiUrl) || empty($bearerToken)) {
                 Log::warning('API settings incomplete, skipping integration', [
@@ -476,7 +477,7 @@ class PaymentController extends Controller
 
             if ($response->successful()) {
                 // Send email with credentials to user
-                $this->sendCredentialsEmail($user, $tempPassword);
+                $this->sendCredentialsEmail($user, $tempPassword, $whatsappGroup);
             } else {
                 Log::error('API request failed', [
                     'invoice_id' => $transaction->invoice_id,
@@ -499,10 +500,10 @@ class PaymentController extends Controller
     /**
      * Send credentials email to user
      */
-    private function sendCredentialsEmail(User $user, string $tempPassword): void
+    private function sendCredentialsEmail(User $user, string $tempPassword, string $whatsappGroup): void
     {
         try {
-            Mail::to($user->email)->send(new \App\Mail\WelcomeEmail($user, $tempPassword));
+            Mail::to($user->email)->send(new \App\Mail\WelcomeEmail($user, $tempPassword, $whatsappGroup));
 
             Log::info('Credentials email sent', [
                 'user_id' => $user->id,

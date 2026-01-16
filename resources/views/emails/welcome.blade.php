@@ -82,6 +82,25 @@
                                 </tr>
                             </table>
 
+                            <!-- WhatsApp Group Invitation -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td style="background-color: #f0fff4; border: 1px solid #c6f6d5; border-radius: 6px; padding: 20px; text-align: center;">
+                                        <p style="margin: 0 0 10px; color: #22543d; font-size: 15px; font-weight: 600;">
+                                            Bergabung dengan Grup WhatsApp Peserta
+                                        </p>
+                                        <p style="margin: 0 0 15px; color: #276749; font-size: 14px; line-height: 1.6;">
+                                            Dapatkan informasi terbaru, diskusi, dan bantuan langsung dari mentor.
+                                        </p>
+                                        <a href="{{ $whatsappGroup }}"
+                                        target="_blank"
+                                        style="display: inline-block; padding: 12px 30px; background-color: #25D366; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 14px;">
+                                            Gabung Grup WhatsApp
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
                             <!-- Next Steps -->
                             <p style="margin: 30px 0 15px; color: #2d3748; font-size: 15px; font-weight: 600;">
                                 Langkah Selanjutnya

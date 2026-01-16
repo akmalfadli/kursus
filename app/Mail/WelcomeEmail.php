@@ -15,7 +15,8 @@ class WelcomeEmail extends Mailable
 
     public function __construct(
         public User $user,
-        public string $tempPassword
+        public string $tempPassword,
+        public string $whatsappGroup
     ) {}
 
     public function envelope(): Envelope
