@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\ContentBlock;
 use App\Services\PricingService;
+use App\Services\WelcomeMessageService;
 use App\Mail\PaymentConfirmation;
 use App\Mail\NewTransactionNotification;
 use Illuminate\Http\Request;
@@ -17,7 +18,10 @@ use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
-    public function __construct(private readonly PricingService $pricingService)
+    public function __construct(
+        private readonly PricingService $pricingService,
+        private readonly WelcomeMessageService $welcomeMessageService
+    )
     {
     }
     // Step 1: Get available payment methods
@@ -513,6 +517,15 @@ class PaymentController extends Controller
             Log::error('Failed to send credentials email', [
                 'error' => $e->getMessage(),
                 'user_id' => $user->id
+            ]);
+        }
+        try {
+            $this->welcomeMessageService->sendWhatsAppWelcome($user, $tempPassword, $whatsappGroup);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send WhatsApp welcome message', [
+                'error' => $e->getMessage(),
+                'user_id' => $user->id,
+                'phone' => $user->phone
             ]);
         }
     }

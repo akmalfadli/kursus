@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Mail\WelcomeEmail;
+use App\Services\WelcomeMessageService;
 use Illuminate\Support\Facades\Mail;
 
 class UserResource extends Resource
@@ -240,11 +241,28 @@ class UserResource extends Resource
                             ]);
 
                             // Send welcome email
-                            Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+                            $whatsappGroup = ContentBlock::getValue('whatsapp_group', config('app.whatsapp_group_url', '#'));
+                            Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword, $whatsappGroup));
+
+                            $whatsappMessage = 'Password baru telah dikirim ke ' . $record->email;
+
+                            if (!empty($record->phone)) {
+                                try {
+                                    app(WelcomeMessageService::class)->sendWhatsAppWelcome($record, $tempPassword, $whatsappGroup);
+                                } catch (\Throwable $e) {
+                                    Log::error('Failed to send WhatsApp welcome message from admin action', [
+                                        'error' => $e->getMessage(),
+                                        'user_id' => $record->id,
+                                    ]);
+                                    $whatsappMessage .= ' (Gagal mengirim pesan WhatsApp: ' . $e->getMessage() . ')';
+                                }
+                            } else {
+                                $whatsappMessage .= ' (Nomor WhatsApp kosong, pesan WA tidak dikirim)';
+                            }
 
                             Notification::make()
                                 ->title('Email selamat datang berhasil dikirim!')
-                                ->body('Password baru telah dikirim ke ' . $record->email)
+                                ->body($whatsappMessage)
                                 ->success()
                                 ->send();
 

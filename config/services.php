@@ -42,5 +42,12 @@ return [
         'return_url' => env('DUITKU_RETURN_URL'),
     ],
 
+    'wa_gateway' => [
+        'base_url' => env('WA_GATEWAY_URL'),
+        'api_key' => env('WA_GATEWAY_KEY'),
+        'session' => env('WA_GATEWAY_SESSION'),
+        'timeout' => env('WA_GATEWAY_TIMEOUT', 15),
+    ],
+
 
 ];
