@@ -95,10 +95,11 @@ class WelcomeMessageService
 
         if (!empty($courseUrl)) {
             $lines[] = "Masuk platform: {$courseUrl}";
+            $lines[] = '';
         }
 
         if (!empty($whatsappGroup)) {
-            $lines[] = "Silahkan bergabung di grup kursus ujian perangkat desa, untuk mengikuti info terbaru.";
+            $lines[] = "Silahkan bergabung di grup belajar kursus ujian perangkat desa, untuk mengikuti info terbaru.";
             $lines[] = "Grup WhatsApp Peserta: {$whatsappGroup}";
         }
 
