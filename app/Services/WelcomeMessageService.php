@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
 class WelcomeMessageService
@@ -42,12 +43,20 @@ class WelcomeMessageService
             $whatsappGroup
         );
 
-        $this->whatsAppGateway->sendText($phoneNumber, $message);
+        try {
+            $this->whatsAppGateway->sendText($phoneNumber, $message);
 
-        Log::info('WhatsApp welcome message sent', [
-            'user_id' => $user->id,
-            'phone' => $phoneNumber,
-        ]);
+            Log::info('WhatsApp welcome message sent', [
+                'user_id' => $user->id,
+                'phone' => $phoneNumber,
+            ]);
+        } catch (RequestException $e) {
+            Log::error('WhatsApp gateway error when sending welcome message', [
+                'user_id' => $user->id,
+                'phone' => $phoneNumber,
+                'gateway_message' => $this->extractGatewayMessage($e),
+            ]);
+        }
     }
 
     public function sendTestWelcomeMessage(
@@ -68,7 +77,12 @@ class WelcomeMessageService
         $url = $courseUrl ?: config('app.course_platform_url', config('app.url'));
         $message = $this->buildMessage($name, $email, $tempPassword, $class, $url, $whatsappGroup);
 
-        $this->whatsAppGateway->sendText($formattedPhone, $message);
+        try {
+            $this->whatsAppGateway->sendText($formattedPhone, $message);
+        } catch (RequestException $e) {
+            $friendlyMessage = $this->extractGatewayMessage($e);
+            throw new \RuntimeException('Gateway WhatsApp gagal: ' . $friendlyMessage, 0, $e);
+        }
     }
 
     public function buildMessage(
@@ -107,6 +121,26 @@ class WelcomeMessageService
         $lines[] = 'Segera login dan ganti password Anda ya!';
 
         return implode("\n", $lines);
+    }
+
+    private function extractGatewayMessage(RequestException $e): string
+    {
+        $response = $e->response;
+
+        if ($response) {
+            $json = $response->json();
+
+            if (is_array($json) && isset($json['message'])) {
+                return $json['message'];
+            }
+
+            $body = trim($response->body() ?? '');
+            if ($body !== '') {
+                return $body;
+            }
+        }
+
+        return $e->getMessage();
     }
 
     private function formatPhoneNumber(?string $phone): string

@@ -367,7 +367,24 @@ class UserResource extends Resource
 
                             if ($response->successful()) {
                                 // Send email with credentials to user
-                                Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword));
+                                $whatsappGroup = ContentBlock::getValue('whatsapp_group', config('app.whatsapp_group_url', '#'));
+                                Mail::to($record->email)->send(new WelcomeEmail($record, $tempPassword, $whatsappGroup));
+
+                                $whatsappMessage = '';
+                                if (!empty($record->phone)) {
+                                    try {
+                                        app(WelcomeMessageService::class)->sendWhatsAppWelcome($record, $tempPassword, $whatsappGroup);
+                                        $whatsappMessage = '\nPesan WhatsApp berhasil dikirim.';
+                                    } catch (\Throwable $e) {
+                                        Log::error('Failed to send WhatsApp welcome message from API action', [
+                                            'error' => $e->getMessage(),
+                                            'user_id' => $record->id,
+                                        ]);
+                                        $whatsappMessage = '\nWhatsApp gagal: ' . $e->getMessage();
+                                    }
+                                } else {
+                                    $whatsappMessage = '\nNomor WhatsApp kosong, pesan WA tidak dikirim.';
+                                }
 
                                 // Show success notification with response details
                                 $message = 'Data berhasil dikirim ke API!';
@@ -379,6 +396,8 @@ class UserResource extends Resource
                                 if (isset($responseData['userId'])) {
                                     $message .= "\nUser ID: " . $responseData['userId'];
                                 }
+
+                                $message .= $whatsappMessage;
 
                                 Notification::make()
                                     ->title('✅ API Integration Berhasil')
