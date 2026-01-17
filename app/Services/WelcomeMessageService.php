@@ -80,7 +80,7 @@ class WelcomeMessageService
         ?string $whatsappGroup
     ): string {
         $lines = [
-            "Halo {$name}! Selamat datang di Digidesa - Kursus Perangkat Desa.",
+            "Halo {$name}! Selamat datang di Digidesa - Kursus Ujian Perangkat Desa.",
             '',
             'Berikut informasi akun Anda:',
             "Email: {$email}",
@@ -98,6 +98,7 @@ class WelcomeMessageService
         }
 
         if (!empty($whatsappGroup)) {
+            $lines[] = "Silahkan bergabung di grup kursus ujian perangkat desa, untuk mengikuti info terbaru.";
             $lines[] = "Grup WhatsApp Peserta: {$whatsappGroup}";
         }
 
