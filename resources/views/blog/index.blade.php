@@ -2,6 +2,45 @@
 
 @section('title', 'Artikel & Berita - ' . config('app.name'))
 @section('description', 'Dapatkan informasi terbaru, tips, dan panduan lengkap seputar ujian perangkat desa.')
+@section('canonical', request()->fullUrl())
+@section('og_title', 'Artikel & Berita - ' . config('app.name'))
+@section('og_description', 'Update terbaru dan wawasan mendalam seputar materi dan soal-soal ujian perangkat desa untuk meningkatkan peluang kelulusan Anda.')
+@section('og_type', 'article')
+@section('twitter_title', 'Blog Digidesa: Wawasan & Tips Ujian Perangkat Desa')
+@section('twitter_description', 'Ikuti artikel terbaru kami seputar strategi belajar, kisi-kisi, dan tips lulus ujian perangkat desa.')
+
+@push('head')
+    @php
+        $latestPosts = $posts->take(5)->map(function ($post) {
+            return [
+                '@type' => 'BlogPosting',
+                'headline' => $post->title,
+                'url' => route('blog.show', $post->slug),
+                'datePublished' => $post->created_at->toIso8601String(),
+                'dateModified' => $post->updated_at->toIso8601String(),
+                'image' => $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'),
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $post->user->name ?? 'Admin Digidesa',
+                ],
+                'description' => \Illuminate\Support\Str::limit(strip_tags($post->content), 150)
+            ];
+        });
+
+        $blogSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Blog',
+            'name' => 'Blog Digidesa',
+            'url' => route('blog.index'),
+            'description' => 'Artikel dan berita terbaru seputar persiapan ujian perangkat desa.',
+            'blogPost' => $latestPosts,
+        ];
+    @endphp
+
+    <script type="application/ld+json">
+        {!! json_encode($blogSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+@endpush
 
 @section('content')
 <div class="min-h-screen bg-slate-50/50">

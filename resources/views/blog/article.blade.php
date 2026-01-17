@@ -1,8 +1,49 @@
 @extends('layouts.app')
 
-@section('title', $post->title)
+@section('title', $post->title . ' | ' . config('app.name'))
 @section('description', Str::limit(strip_tags($post->content), 150))
+@section('canonical', route('blog.show', $post->slug))
+@section('og_title', $post->title . ' | ' . config('app.name'))
+@section('og_description', Str::limit(strip_tags($post->content), 150))
+@section('og_type', 'article')
 @section('og_image', $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'))
+@section('twitter_title', $post->title)
+@section('twitter_description', Str::limit(strip_tags($post->content), 200))
+@section('twitter_image', $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'))
+
+@push('head')
+    @php
+        $articleSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => route('blog.show', $post->slug)
+            ],
+            'headline' => $post->title,
+            'description' => Str::limit(strip_tags($post->content), 160),
+            'image' => $post->image ? \Illuminate\Support\Facades\Storage::url($post->image) : asset('images/graduation.png'),
+            'datePublished' => $post->created_at->toIso8601String(),
+            'dateModified' => $post->updated_at->toIso8601String(),
+            'author' => [
+                '@type' => 'Person',
+                'name' => $post->user->name ?? 'Admin Digidesa',
+            ],
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => config('app.name'),
+                'logo' => [
+                    '@type' => 'ImageObject',
+                    'url' => asset('images/graduation.png')
+                ]
+            ]
+        ];
+    @endphp
+
+    <script type="application/ld+json">
+        {!! json_encode($articleSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+@endpush
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
